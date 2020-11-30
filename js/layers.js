@@ -15,6 +15,7 @@ addLayer("e", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
+        if(hasUpgrade("e", 13)) mult = mult.times(upgradeEffect("e", 13))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -24,7 +25,52 @@ addLayer("e", {
     hotkeys: [
         {key: "e", description: "E: Reset for Earth Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
+    layerShown(){return true},
+    upgrades: {
+        rows: 2,
+        cols: 5,
+        11: {
+            title: "E1",
+            description: "Gain 1 Null Energy every second.",
+            cost: new Decimal(1),
+            unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
+        },
+        12: {
+            title: "E2",
+            description: "Earth Essence boosts Null Energy.",
+            cost: new Decimal(5),
+            unlocked() { return (hasUpgrade(this.layer, 11))},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let ret = player[this.layer].points.add(1).pow(1.01)
+                if (ret.gte("1e20000000")) ret = ret.sqrt().times("1e10000000")
+                if (ret.lt("3")) ret = new Decimal(3)
+                return ret;
+            },
+            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        13: {
+            title: "E3",
+            description: "Earth Energy boosts Earth Energy gain.",
+            cost: new Decimal(10),
+            unlocked() { return (hasUpgrade(this.layer, 12))},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let ret = player[this.layer].points.add(1).pow(1.01)
+                if (ret.gte("50")) ret = ret.sqrt().times("0.1").max(50)
+                return ret;
+            },
+            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        /*22: {
+            title: "This upgrade doesn't exist",
+            description: "Or does it?.",
+            currencyLocation() {return player[this.layer].buyables}, // The object in player data that the currency is contained in
+            currencyDisplayName: "exhancers", // Use if using a nonstandard currency
+            currencyInternalName: 11, // Use if using a nonstandard currency
+
+            cost: new Decimal(3),
+            unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
+        },*/
+    },
 })
 
 addLayer("w", {

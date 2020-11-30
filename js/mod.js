@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The Alchemy Tree",
 	id: "alchtree",
 	author: "chipgeekjr",
-	pointsName: "null energy",
+	pointsName: "Null Energy",
 	discordName: "",
 	discordLink: "",
 	changelogLink: "https://github.com/Acamaeda/The-Modding-Tree/blob/master/changelog.md",
@@ -27,7 +27,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return true
+	return hasUpgrade("e", 11)
 }
 
 // Calculate points/sec!
@@ -36,6 +36,7 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+	if (hasUpgrade("e", 12)) gain = gain.times(upgradeEffect("e", 12))
 	return gain
 }
 
@@ -49,7 +50,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return false
 }
 
 
