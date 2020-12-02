@@ -1,3 +1,111 @@
+addLayer("study", {
+    name: "studies",
+    symbol: "S",
+    position: 0,
+    requires: new Decimal(0),
+    startData() { return {
+        unlocked: true,
+        points: new Decimal(0),
+    }},
+    color: "#ba15db",
+    resource: "studies",
+    baseResource: "Null Energy",
+    baseAmount() {return new Decimal(0)},
+    type: "none",
+    row: 0, //Should be "side", but doesn't display if it is.
+    layerShown() {return hasUpgrade("e", 22) || player[this.layer].points.gte(1)},
+    doReset() {
+        player[this.layer].upgrades = player[this.layer].upgrades
+        player[this.layer].points = player[this.layer].points
+        player.points = new Decimal(0)
+    },
+    upgrades: {
+        rows: 5,
+        cols: 5,
+        11: {
+            title: "Study N1",
+            description: "Gain 100x more Null Energy",
+            cost: new Decimal(150),
+            currencyDisplayName: "Earth Essence",
+            currencyInternalName: "points",
+            currencyLayer: "e",
+            unlocked(){
+                return hasUpgrade("e", 22)
+            },
+            onPurchase(){
+                player[this.layer].points = player[this.layer].points.add(1)
+            },
+            
+        },
+        12: {
+            title: "Study E1",
+            description: "Earth Essence boosts itself.",
+            cost: new Decimal(500),
+            currencyDisplayName: "Earth Essence",
+            currencyInternalName: "points",
+            currencyLayer: "e",
+            unlocked(){
+                return hasUpgrade("study", 11)
+            },
+            effect() {
+                let ret = player.e.points.add(1).log10().pow(0.25).add(1)
+                ret = softcap("SE1", ret)
+                return ret
+            },
+            effectDisplay() { return format(this.effect())+"x" },
+            onPurchase(){
+                player[this.layer].points = player[this.layer].points.add(1)
+            },
+            
+        },
+        13: {
+            title: "Study N2",
+            description: "Raise Null Energy gain by 1.2",
+            cost: new Decimal(1e4),
+            currencyDisplayName: "Earth Essence",
+            currencyInternalName: "points",
+            currencyLayer: "e",
+            unlocked(){
+                return hasUpgrade("study", 12)
+            },
+            onPurchase(){
+                player[this.layer].points = player[this.layer].points.add(1)
+            },
+            
+        },
+        14: {
+            title: "Study E2",
+            description: "Raise E3 by 1.5",
+            cost: new Decimal(5e5),
+            currencyDisplayName: "Earth Essence",
+            currencyInternalName: "points",
+            currencyLayer: "e",
+            unlocked(){
+                return hasUpgrade("e", 23)
+            },
+            onPurchase(){
+                player[this.layer].points = player[this.layer].points.add(1)
+            },
+            
+        },
+        15: {
+            title: "Study W1",
+            description: "Unlock Water Essence, Keep E1 on all resets.",
+            cost: new Decimal(2.5e6),
+            currencyDisplayName: "Earth Essence",
+            currencyInternalName: "points",
+            currencyLayer: "e",
+            unlocked(){
+                return hasUpgrade("study", 14)
+            },
+            onPurchase(){
+                player[this.layer].points = player[this.layer].points.add(1)
+            },
+            
+        },
+    },
+
+})
 addLayer("e", {
     name: "earth", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "E", // This appears on the layer's node. Default is the id with the first letter capitalized
@@ -15,20 +123,29 @@ addLayer("e", {
     exponent: 0.5, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
-        if(hasUpgrade("e", 13)) mult = mult.times(upgradeEffect("e", 13))
+        if (hasUpgrade("e", 21)) mult = mult.times(upgradeEffect("e", 21))
+        if (hasUpgrade("study", 12)) mult = mult.times(upgradeEffect("study", 12))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         return new Decimal(1)
     },
-    row: 0, // Row the layer is in on the tree (0 is the first row)
+    doReset(layer) {
+        if (layers[layer].name != "earth") {
+            let keep = []
+            if (hasUpgrade("study", 15)) keep.push(11)
+            player.e.upgrades = keep
+            player[this.layer].points = new Decimal(0)
+        } 
+    },
+    row: 1, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
         {key: "e", description: "E: Reset for Earth Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return true},
     upgrades: {
         rows: 2,
-        cols: 5,
+        cols: 3,
         11: {
             title: "E1",
             description: "Gain 1 Null Energy every second.",
@@ -38,38 +155,54 @@ addLayer("e", {
         12: {
             title: "E2",
             description: "Earth Essence boosts Null Energy.",
-            cost: new Decimal(5),
+            cost: new Decimal(2),
             unlocked() { return (hasUpgrade(this.layer, 11))},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
-                let ret = player[this.layer].points.add(1).pow(1.01)
-                if (ret.gte("1e20000000")) ret = ret.sqrt().times("1e10000000")
-                if (ret.lt("3")) ret = new Decimal(3)
+                let ret = player[this.layer].points.add(2).pow(0.5)
+                if (hasUpgrade("e", 23)) ret = ret.pow(1.5)
+                ret = ret.max(2)
+                ret = softcap("E2", ret)
                 return ret;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
         },
         13: {
             title: "E3",
-            description: "Earth Energy boosts Earth Energy gain.",
-            cost: new Decimal(10),
+            description: "Null Energy boosts itself.",
+            cost: new Decimal(5),
             unlocked() { return (hasUpgrade(this.layer, 12))},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
-                let ret = player[this.layer].points.add(1).pow(1.01)
-                if (ret.gte("50")) ret = ret.sqrt().times("0.1").max(50)
+                let ret = player.points.add(1).log10().pow(0.75).add(1)
+                if (hasUpgrade("study", 14)) ret = ret.pow(1.5)
+                ret = softcap("E3", ret)
                 return ret;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
         },
-        /*22: {
-            title: "This upgrade doesn't exist",
-            description: "Or does it?.",
-            currencyLocation() {return player[this.layer].buyables}, // The object in player data that the currency is contained in
-            currencyDisplayName: "exhancers", // Use if using a nonstandard currency
-            currencyInternalName: 11, // Use if using a nonstandard currency
-
-            cost: new Decimal(3),
-            unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
-        },*/
+        21: {
+            title: "E4",
+            description: "Null Energy boosts Earth Essence gain.",
+            cost: new Decimal(25),
+            unlocked() { return (hasUpgrade(this.layer, 13))}, // The upgrade is only visible when this is true
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let ret = player.points.plus(1).log10().cbrt().plus(1)
+                //ret = softcap("E3", ret)
+                return ret;
+            },
+            effectDisplay() { return format(this.effect())+"x" },
+        },
+        22: {
+            title: "E5",
+            description: "Unlock Elemental Studies",
+            cost: new Decimal(100),
+            unlocked() { return (hasUpgrade(this.layer, 21))}, // The upgrade is only visible when this is true
+        },
+        23: {
+            title: "E6",
+            description: "Raise E2 by 1.5",
+            cost: new Decimal(1e5),
+            unlocked() { return (hasUpgrade("study", 13))},
+        },
     },
 })
 
@@ -82,7 +215,7 @@ addLayer("w", {
 		points: new Decimal(0),
     }},
     color: "#5858c8",
-    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    requires: new Decimal(5e6), // Can be a function that takes requirement increases into account
     resource: "Water Essence", // Name of prestige currency
     baseResource: "Earth Essence", // Name of resource prestige is based on
     baseAmount() {return player.e.points}, // Get the current amount of baseResource
@@ -95,12 +228,12 @@ addLayer("w", {
     gainExp() { // Calculate the exponent on main currency from bonuses
         return new Decimal(1)
     },
-    row: 1,// Row the layer is in on the tree (0 is the first row)
+    row: 2,// Row the layer is in on the tree (0 is the first row)
     branches: ["e"], 
     hotkeys: [
         {key: "w", description: "W: Reset for Water Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
+    layerShown(){return hasUpgrade("study", 15)||player[this.layer].best.gte(1)}
 })
 
 addLayer("a", {
@@ -125,17 +258,17 @@ addLayer("a", {
     gainExp() { // Calculate the exponent on main currency from bonuses
         return new Decimal(1)
     },
-    row: 2, // Row the layer is in on the tree (0 is the first row)
+    row: 3, // Row the layer is in on the tree (0 is the first row)
     branches: ["w"], 
     hotkeys: [
         {key: "a", description: "A: Reset for Air Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
+    layerShown(){return hasUpgrade("study", 51)||player[this.layer].best.gte(1)}
 })
 
 addNode("blank", {
     position: 1,
-    row: 1,
+    row: 2,
     layerShown: "ghost",
 }, 
 )
@@ -162,10 +295,10 @@ addLayer("f", {
     gainExp() { // Calculate the exponent on main currency from bonuses
         return new Decimal(1)
     },
-    row: 1, // Row the layer is in on the tree (0 is the first row)
+    row: 2, // Row the layer is in on the tree (0 is the first row)
     branches: ["a", "e"], 
     hotkeys: [
         {key: "f", description: "F: Reset for Fire Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return true}
+    layerShown(){return hasUpgrade("study", 31)||player[this.layer].best.gte(1)}
 })

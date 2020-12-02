@@ -13,8 +13,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "First ring",
+	num: "0.0.1",
+	name: "Earth to Water",
 }
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
@@ -37,6 +37,9 @@ function getPointGen() {
 
 	let gain = new Decimal(1)
 	if (hasUpgrade("e", 12)) gain = gain.times(upgradeEffect("e", 12))
+	if (hasUpgrade("e", 13)) gain = gain.times(upgradeEffect("e", 13))
+	if (hasUpgrade("study", 11)) gain = gain.times(100)
+	if (hasUpgrade("study", 13)) gain = gain.pow(1.2)
 	return gain
 }
 
