@@ -16,6 +16,16 @@ const SOFTCAPS = {
         type: "log",
         start: new Decimal("1e2000"),
         exp: new Decimal(1),
+	},
+	W1: {
+        type: "log",
+        start: new Decimal("1e3500"),
+        exp: new Decimal(1),
+	},
+	W2: {
+        type: "log",
+        start: new Decimal("1e3500"),
+        exp: new Decimal(1),
     },
 
 	/*p12: {
