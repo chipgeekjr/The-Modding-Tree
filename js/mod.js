@@ -36,6 +36,7 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+	updateConverters(gain)
 	if (hasUpgrade("e", 12)) gain = gain.times(upgradeEffect("e", 12))
 	if (hasUpgrade("e", 13)) gain = gain.times(upgradeEffect("e", 13))
 	if (hasUpgrade("study", 11)) gain = gain.times(100)
