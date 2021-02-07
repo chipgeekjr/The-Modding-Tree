@@ -207,6 +207,12 @@ addLayer("e", {
             unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
         },
         12: {
+            title: "E2X",
+            description: "Increase Null-Earth Converter efficency by 20%",
+            cost: new Decimal(1),
+            unlocked() { return player[this.layer].unlocked }, // The upgrade is only visible when this is true
+        },
+        /*12: {
             title: "E2",
             description: "Earth Essence boosts Null Energy.",
             cost: new Decimal(2),
@@ -219,7 +225,7 @@ addLayer("e", {
                 return ret;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
-        },
+        },*/
         13: {
             title: "E3",
             description: "Null Energy boosts itself.",

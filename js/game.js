@@ -289,6 +289,7 @@ function gameLoop(diff) {
 			diff = limit
 	}
 	addTime(diff)
+	updateConverters(diff)
 	player.points = player.points.add(tmp.pointGen.times(diff)).max(0)
 
 	for (x = 0; x <= maxRow; x++){

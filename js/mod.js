@@ -36,16 +36,31 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
-	updateConverters(gain)
-	if (hasUpgrade("e", 12)) gain = gain.times(upgradeEffect("e", 12))
+	if(converters["null-earth"].enabled == true) gain = gain.times(converters["null-earth"].drainRatio)
+	//if (hasUpgrade("e", 12)) gain = gain.times(upgradeEffect("e", 12))
 	if (hasUpgrade("e", 13)) gain = gain.times(upgradeEffect("e", 13))
 	if (hasUpgrade("study", 11)) gain = gain.times(100)
 	if (hasUpgrade("study", 13)) gain = gain.pow(1.2)
 	return gain
 }
 
+// Used for converter rates, copy of getPointGen() in most ways
+function getVirtualPointGen() {
+	if(!canGenPoints())
+		return new Decimal(0)
+
+	let vGain = new Decimal(1)
+	//if (hasUpgrade("e", 12)) vGain = vGain.times(upgradeEffect("e", 12))
+	if (hasUpgrade("e", 13)) vGain = vGain.times(upgradeEffect("e", 13))
+	if (hasUpgrade("study", 11)) vGain = vGain.times(100)
+	if (hasUpgrade("study", 13)) vGain = vGain.pow(1.2)
+	return vGain
+
+}
+
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
-function addedPlayerData() { return {
+function addedPlayerData() { return { 
+	converters: {}
 }}
 
 // Display extra things at the top of the page
