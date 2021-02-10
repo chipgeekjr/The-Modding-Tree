@@ -196,6 +196,45 @@ addLayer("e", {
     hotkeys: [
         {key: "e", description: "E: Reset for Earth Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+    pointGain() {
+        let gain = new Decimal(0)
+        if (converters["null-earth"].enabled == true) {
+            gain = gain.add(getVirtualPointGen().div(converters["null-earth"].outputRatio))
+        }
+        if (converters["earth-water"].enabled == true) {
+            gain = gain.times(converters["earth-water"].drainRatio)
+        }
+        return gain
+    },
+    virtualPointGain() {
+        let vGain = new Decimal(0)
+        if (converters["null-earth"].enabled == true) {
+            vGain = vGain.add(getVirtualPointGen().div(converters["null-earth"].outputRatio))
+        }
+        return vGain
+    },
+    tabFormat: {
+        "Main": {
+            content: [
+                function() {if (player.tab == "e") return "main-display"},
+                "prestige-button",
+                function() {if (player.tab == "e") return "resource-display"},
+                "blank",
+                "upgrades"
+            ],
+        },
+        "Transmutation": {
+            content: [
+                ["display-text",
+                function() {return "Manifest Earth"}
+                ],
+                ["column", [["row", [["clickable", 11]]]]],
+                ["display-text",
+                function() {return "Transmutation Efficency: " + converters["null-earth"].percent + "%"}
+                ],
+            ],
+        },
+    },
     layerShown(){return true},
     upgrades: {
         rows: 2,
@@ -265,6 +304,20 @@ addLayer("e", {
             unlocked() { return (hasUpgrade("study", 13)||hasUpgrade(this.layer, 23))},
         },
     },
+    clickables: {
+        rows: 1,
+        cols: 1,
+        11: {
+            display() { 
+                let data = "O" + ((converters["null-earth"].enabled == true)?"N":"FF")
+                return data
+            },
+            onClick() {
+                toggleConverter("null-earth")
+            },
+            canClick() { return true},
+        },
+    },
 })
 
 addLayer("w", {
@@ -294,6 +347,43 @@ addLayer("w", {
     hotkeys: [
         {key: "w", description: "W: Reset for Water Essence", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+    pointGain() {
+        let gain = new Decimal(0)
+        if (converters["earth-water"].enabled == true) {
+            gain = gain.add(tmp.e.virtualPointGain.div(converters["earth-water"].outputRatio))
+        }
+        return gain
+    },
+    virtualPointGain() {
+        let vGain = new Decimal(0)
+        if (converters["earth-water"].enabled == true) {
+            vGain = vGain.add(tmp.e.virtualPointGain.div(converters["earth-water"].outputRatio))
+        }
+        return vGain
+    },
+    tabFormat: {
+        "Main": {
+            content: [
+                function() {if (player.tab == "w") return "main-display"},
+                "prestige-button",
+                function() {if (player.tab == "w") return "resource-display"},
+                "blank",
+                "upgrades"
+            ],
+        },
+        "Transmutation": {
+            content: [
+                ["display-text",
+                function() {return "Liquefy  Earth"}
+                ],
+                ["column", [["row", [["clickable", 11]]]]],
+                ["display-text",
+                function() {return "Transmutation Efficency: " + converters["earth-water"].percent + "%"}
+                ],
+            ],
+        },
+        
+    },
     layerShown(){return hasUpgrade("study", 15)||player[this.layer].best.gte(1)},
     upgrades: {
         rows: 2,
@@ -345,6 +435,20 @@ addLayer("w", {
             unlocked() { return (hasUpgrade("study", 23))}, // The upgrade is only visible when this is true
         },
         
+    },
+    clickables: {
+        rows: 1,
+        cols: 1,
+        11: {
+            display() { 
+                let data = "O" + ((converters["earth-water"].enabled == true)?"N":"FF")
+                return data
+            },
+            onClick() {
+                toggleConverter("earth-water")
+            },
+            canClick() { return true},
+        },
     },
 })
 
