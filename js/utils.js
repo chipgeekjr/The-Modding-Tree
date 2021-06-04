@@ -19,10 +19,56 @@ function canAffordUpgrade(layer, id) {
 
 function canBuyBuyable(layer, id) {
 	let b = temp[layer].buyables[id]
-	return (b.unlocked && run(b.canAfford, b) && player[layer].buyables[id].lt(b.purchaseLimit) && !tmp[layer].deactivated)
+	return (b.unlocked && run(b.canAfford, b) && player[layer].buyables[id].bought.lt(b.purchaseLimit) && !tmp[layer].deactivated)
 }
 
+function calculatetaxes() {
+	let a = new Decimal(0);
+    let c = 0;
+    let e = 1;
+    let f = 1;
+    let compareC = 0;
+	let coinMult = new Decimal(tmp.c.buyables[31].effect.mult).mul(tmp.c.buyables[32].effect.mult)
+	produceFirst = (player.c.buyables[11].amount.times(coinMult).times(upgradeEffect("c", 11)).times(0.25))
+    produceSecond = (player.c.buyables[12].amount.times(coinMult).times(upgradeEffect("c", 12)).times(2.5))
+    produceThird = (player.c.buyables[13].amount.times(coinMult).times(upgradeEffect("c", 13)).times(25))
+    produceFourth = (player.c.buyables[21].amount.times(coinMult).times(upgradeEffect("c", 14)).times(250))
+    produceFifth = (player.c.buyables[22].amount.times(coinMult).times(upgradeEffect("c", 15)).times(2500))
+    produceTotal = produceFirst.add(produceSecond).add(produceThird).add(produceFourth).add(produceFifth);
 
+    if (produceFirst.lessThanOrEqualTo(.0001)) {
+        produceFirst = new Decimal(0)
+    }
+    if (produceSecond.lessThanOrEqualTo(.0001)) {
+        produceSecond = new Decimal(0)
+    }
+    if (produceThird.lessThanOrEqualTo(.0001)) {
+        produceThird = new Decimal(0)
+    }
+    if (produceFourth.lessThanOrEqualTo(.0001)) {
+        produceFourth = new Decimal(0)
+    }
+    if (produceFifth.lessThanOrEqualTo(.0001)) {
+        produceFifth = new Decimal(0)
+    }
+
+    producePerSecond = produceTotal.times(40);
+
+	let exponent = 1;
+    exponent *= e;
+	maxexponent = Math.floor(275 / (Decimal.log(1.01, 10) * exponent)) - 1
+    a = Math.min(maxexponent, Math.floor(Decimal.log(produceTotal.add(1), 10)));
+	if (a >= 1) {
+        c = Math.pow(a, 2) / 550
+    }
+
+
+    compareC = Math.pow(maxexponent, 2) / 550
+
+
+    player.taxes = Decimal.pow(1.01, (c) * (exponent))
+	
+}
 
 function canAffordPurchase(layer, thing, cost) {
 

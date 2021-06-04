@@ -23,15 +23,27 @@ function challengeCompletions(layer, id) {
 }
 
 function getBuyableAmount(layer, id) {
-	return (player[layer].buyables[id])
+	return (player[layer].buyables[id].amount)
 }
 
 function setBuyableAmount(layer, id, amt) {
-	player[layer].buyables[id] = amt
+	player[layer].buyables[id].amount = amt
 }
 
 function addBuyables(layer, id, amt) {
-	player[layer].buyables[id] = player[layer].buyables[id].add(amt)
+	player[layer].buyables[id].amount = player[layer].buyables[id].amount.add(amt)
+}
+
+function getBuyableBoughtAmount(layer, id) {
+	return (player[layer].buyables[id].bought)
+}
+
+function setBuyableBoughtAmount(layer, id, amt) {
+	player[layer].buyables[id].bought = amt
+}
+
+function addBoughtBuyables(layer, id, amt) {
+	player[layer].buyables[id].bought = player[layer].buyables[id].bought.add(amt)
 }
 
 function getClickableState(layer, id) {

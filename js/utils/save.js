@@ -92,7 +92,8 @@ function getStartBuyables(layer) {
 	if (layers[layer].buyables) {
 		for (id in layers[layer].buyables)
 			if (isPlainObject(layers[layer].buyables[id]))
-				data[id] = decimalZero;
+				data[id] = {amount: decimalZero, bought: decimalZero}
+				
 	}
 	return data;
 }

@@ -180,6 +180,14 @@ function generatePoints(layer, diff) {
 	addPoints(layer, tmp[layer].resetGain.times(diff))
 }
 
+function updateGenerators(layer, diff) {
+	for (id in player[layer].buyables) {
+		if (!isPlainObject(tmp[layer].buyables[id].effect)) {
+			addPoints(layer, tmp[layer].buyables[id].effect.times(diff))
+		}
+	}
+}
+
 var prevOnReset
 
 function doReset(layer, force=false) {
@@ -346,12 +354,15 @@ function gameLoop(diff) {
 			diff = limit
 	}
 	addTime(diff)
-	player.points = player.points.add(tmp.pointGen.times(diff)).max(0)
+	//player.points = player.points.add(tmp.pointGen.times(diff)).max(0)
+	player.points = player.c.points
+	calculatetaxes()
 
 	for (let x = 0; x <= maxRow; x++){
 		for (item in TREE_LAYERS[x]) {
 			let layer = TREE_LAYERS[x][item]
 			player[layer].resetTime += diff
+			updateGenerators(layer, diff)
 			if (tmp[layer].passiveGeneration) generatePoints(layer, diff*tmp[layer].passiveGeneration);
 			if (layers[layer].update) layers[layer].update(diff);
 		}
