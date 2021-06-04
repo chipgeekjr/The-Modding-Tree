@@ -12,8 +12,6 @@ Upgrades are stored in the following format:
 
 ```js
 upgrades: {
-    rows: # of rows,
-    cols: # of columns,
     11: {
         description: "Blah",
         cost: new Decimal(100),
@@ -23,7 +21,7 @@ upgrades: {
 }
 ```
 
-Each upgrade should have an id where the first digit is the row and the second digit is the column.
+Usually, upgrades should have an id where the first digit is the row and the second digit is the column.
 
 Individual upgrades can have these features:
 
@@ -61,6 +59,8 @@ By default, upgrades use the main prestige currency for the layer. You can inclu
 
 If you want to do something more complicated like upgrades that cost two currencies, you can override the purchase system with these (and you need to use fullDisplay as well)
 
--canAfford(): **OVERRIDE**, a function determining if you are able to buy the upgrade
+- canAfford(): **OVERRIDE**, a function determining if you are able to buy the upgrade
 
--pay(): **OVERRIDE**, a function that reduces your currencies when you buy the upgrade
+- pay(): **OVERRIDE**, a function that reduces your currencies when you buy the upgrade
+
+- branches: **optional**, This is primarially useful for upgrade trees. An array of upgrade ids. A line will appear from this upgrade to all of the upgrades in the list. Alternatively, an entry in the array can be a 2-element array consisting of the upgrade id and a color value. The color value can either be a string with a hex color code, or a number from 1-3 (theme-affected colors).
