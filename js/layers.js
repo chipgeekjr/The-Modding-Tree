@@ -38,10 +38,8 @@ addLayer("c", {
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 let total = new Decimal(0)
-                for(id in player[this.layer].buyables) {
-                    if(id != (31||32)) total = total.add(player[this.layer].buyables[id].bought)
-                }
-                eff = eff.times(total + 1) * Decimal.min(1e30, Decimal.pow(1.008, total))
+                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
+                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total))).floor()
                 return eff;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
@@ -54,10 +52,8 @@ addLayer("c", {
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 let total = new Decimal(0)
-                for(id in player[this.layer].buyables) {
-                    if(id != (31||32)) total = total.add(player[this.layer].buyables[id].bought)
-                }
-                eff = eff.times(total + 1) * Decimal.min(1e30, Decimal.pow(1.008, total))
+                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
+                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total))).floor()
                 return eff;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
@@ -70,10 +66,8 @@ addLayer("c", {
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 let total = new Decimal(0)
-                for(id in player[this.layer].buyables) {
-                    if(id != (31||32)) total = total.add(player[this.layer].buyables[id].bought)
-                }
-                eff = eff.times(total + 1) * Decimal.min(1e30, Decimal.pow(1.008, total))
+                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
+                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total))).floor()
                 return eff;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
@@ -86,10 +80,8 @@ addLayer("c", {
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 let total = new Decimal(0)
-                for(id in player[this.layer].buyables) {
-                    if(id != (31||32)) total = total.add(player[this.layer].buyables[id].bought)
-                }
-                eff = eff.times(total + 1) * Decimal.min(1e30, Decimal.pow(1.008, total))
+                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
+                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total))).floor()
                 return eff;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
@@ -102,10 +94,8 @@ addLayer("c", {
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 let total = new Decimal(0)
-                for(id in player[this.layer].buyables) {
-                    if(id != (31||32)) total = total.add(player[this.layer].buyables[id].bought)
-                }
-                eff = eff.times(total + 1) * Decimal.min(1e30, Decimal.pow(1.008, total))
+                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
+                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total))).floor()
                 return eff;
             },
             effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
@@ -148,7 +138,7 @@ addLayer("c", {
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
                 if (hasUpgrade("c", 11)) eff = eff.mul(upgradeEffect("c", 11))
-                eff = eff.div(player.taxes)
+                //eff = eff.div(player.taxes)
                 return eff
             },
             unlocked() { return player[this.layer].unlocked }, 
@@ -200,7 +190,7 @@ addLayer("c", {
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
                 if (hasUpgrade("c", 12)) eff = eff.mul(upgradeEffect("c", 12))
-                eff = eff.div(player.taxes)
+                //eff = eff.div(player.taxes)
                 return eff
             },
             unlocked() { return player[this.layer].best.gte(1000) || player[this.layer].buyables[this.id].amount.gt(0) }, 
@@ -252,7 +242,7 @@ addLayer("c", {
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
                 if (hasUpgrade("c", 13)) eff = eff.mul(upgradeEffect("c", 13))
-                eff = eff.div(player.taxes)
+                //eff = eff.div(player.taxes)
                 return eff
             },
             unlocked() { return player[this.layer].best.gte(20000) || player[this.layer].buyables[this.id].amount.gt(0)  }, 
@@ -304,7 +294,7 @@ addLayer("c", {
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
                 if (hasUpgrade("c", 14)) eff = eff.mul(upgradeEffect("c", 14))
-                eff = eff.div(player.taxes)
+                //eff = eff.div(player.taxes)
                 return eff
             },
             unlocked() { return player[this.layer].best.gte(4e5) || player[this.layer].buyables[this.id].amount.gt(0)  }, 

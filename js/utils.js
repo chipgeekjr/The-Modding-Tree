@@ -56,6 +56,7 @@ function calculatetaxes() {
 
 	let exponent = 1;
     exponent *= e;
+	exponent *= f;
 	maxexponent = Math.floor(275 / (Decimal.log(1.01, 10) * exponent)) - 1
     a = Math.min(maxexponent, Math.floor(Decimal.log(produceTotal.add(1), 10)));
 	if (a >= 1) {
@@ -67,6 +68,7 @@ function calculatetaxes() {
 
 
     player.taxes = Decimal.pow(1.01, (c) * (exponent))
+	player.taxcheck = Decimal.pow(1.01, (compareC) * (exponent))
 	
 }
 

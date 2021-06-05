@@ -12,13 +12,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "Coins",
+	num: "0.1.1",
+	name: "Taxes",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.1</h3><br>
-		- Added Coin layer.<br>`
+		- Added Coin layer.<br>
+	<h3>v0.1.1</h3><br>
+		- Corrected tax rate.<br>
+		- Fixed Coin upgrade I-V formula.<br>`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -50,7 +53,8 @@ function getPointGen() {
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { 
 	return {
-		taxes: new Decimal(1)
+		taxes: new Decimal(1),
+		taxcheck: new Decimal(1)
 	}
 }
 

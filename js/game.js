@@ -181,11 +181,15 @@ function generatePoints(layer, diff) {
 }
 
 function updateGenerators(layer, diff) {
-	for (id in player[layer].buyables) {
+	//let generation = new Decimal(0)
+	let final;
+	/*for (id in player[layer].buyables) {
 		if (!isPlainObject(tmp[layer].buyables[id].effect)) {
-			addPoints(layer, tmp[layer].buyables[id].effect.times(diff))
+			generation = generation.add(tmp[layer].buyables.effect)
 		}
-	}
+	}*/
+	final = new Decimal.min(produceTotal.dividedBy(player.taxes), Decimal.pow(10, maxexponent - Decimal.log(player.taxcheck, 10)))
+	addPoints(layer, final.times(diff))
 }
 
 var prevOnReset
