@@ -22,18 +22,24 @@ function canBuyBuyable(layer, id) {
 	return (b.unlocked && run(b.canAfford, b) && player[layer].buyables[id].bought.lt(b.purchaseLimit) && !tmp[layer].deactivated)
 }
 
+function getCoinMult() {
+	let coinMult = new Decimal(tmp.c.buyables[31].effect.mult).mul(tmp.c.buyables[32].effect.mult)
+	if (player.p.crystals.gte(0)) coinMult = coinMult.times(tmp.p.effect)
+	return coinMult
+}
+
 function calculatetaxes() {
 	let a = new Decimal(0);
     let c = 0;
     let e = 1;
     let f = 1;
     let compareC = 0;
-	let coinMult = new Decimal(tmp.c.buyables[31].effect.mult).mul(tmp.c.buyables[32].effect.mult)
-	produceFirst = (player.c.buyables[11].amount.times(coinMult).times(upgradeEffect("c", 11)).times(0.25))
-    produceSecond = (player.c.buyables[12].amount.times(coinMult).times(upgradeEffect("c", 12)).times(2.5))
-    produceThird = (player.c.buyables[13].amount.times(coinMult).times(upgradeEffect("c", 13)).times(25))
-    produceFourth = (player.c.buyables[21].amount.times(coinMult).times(upgradeEffect("c", 14)).times(250))
-    produceFifth = (player.c.buyables[22].amount.times(coinMult).times(upgradeEffect("c", 15)).times(2500))
+	let coinMult = getCoinMult()
+	produceFirst = (player.c.buyables[11].amount.times(coinMult).times(hasUpgrade("c", 11) ? upgradeEffect("c", 11) : 1).times(0.25))
+    produceSecond = (player.c.buyables[12].amount.times(coinMult).times(hasUpgrade("c", 12) ? upgradeEffect("c", 12) : 1).times(2.5))
+    produceThird = (player.c.buyables[13].amount.times(coinMult).times(hasUpgrade("c", 13) ? upgradeEffect("c", 13) : 1).times(25))
+    produceFourth = (player.c.buyables[21].amount.times(coinMult).times(hasUpgrade("c", 14) ? upgradeEffect("c", 14) : 1).times(250))
+    produceFifth = (player.c.buyables[22].amount.times(coinMult).times(hasUpgrade("c", 15) ? upgradeEffect("c", 15) : 1).times(2500))
     produceTotal = produceFirst.add(produceSecond).add(produceThird).add(produceFourth).add(produceFifth);
 
     if (produceFirst.lessThanOrEqualTo(.0001)) {

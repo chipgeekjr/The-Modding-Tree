@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1.1",
-	name: "Taxes",
+	num: "0.2",
+	name: "Diamonds",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -21,7 +21,10 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Added Coin layer.<br>
 	<h3>v0.1.1</h3><br>
 		- Corrected tax rate.<br>
-		- Fixed Coin upgrade I-V formula.<br>`
+		- Fixed Coin upgrade I-V formula.<br>
+	<h3>v0.2</h3><br>
+		- Added Prestige and Runes layers.<br>
+		- Added Diamond buildings.<br>`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -47,6 +50,7 @@ function getPointGen() {
 	for(id in tmp.c.buyables) {
 		if(id != (31||32)) gain = gain.add(tmp.c.buyables[id].effect)
 	}
+	gain = gain.mul(getCoinMult())
 	return gain
 }
 
@@ -54,7 +58,8 @@ function getPointGen() {
 function addedPlayerData() { 
 	return {
 		taxes: new Decimal(1),
-		taxcheck: new Decimal(1)
+		taxcheck: new Decimal(1),
+		r: 1.00625
 	}
 }
 

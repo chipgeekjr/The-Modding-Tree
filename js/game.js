@@ -176,21 +176,65 @@ function addPoints(layer, gain) {
 	if (player[layer].total) player[layer].total = player[layer].total.add(gain)
 }
 
+function addSubPoints(layer, type, gain) {
+	player[layer][type] = player[layer][type].add(gain).max(0)
+}
+
 function generatePoints(layer, diff) {
 	addPoints(layer, tmp[layer].resetGain.times(diff))
 }
 
-function updateGenerators(layer, diff) {
-	//let generation = new Decimal(0)
-	let final;
-	/*for (id in player[layer].buyables) {
-		if (!isPlainObject(tmp[layer].buyables[id].effect)) {
-			generation = generation.add(tmp[layer].buyables.effect)
-		}
-	}*/
-	final = new Decimal.min(produceTotal.dividedBy(player.taxes), Decimal.pow(10, maxexponent - Decimal.log(player.taxcheck, 10)))
-	addPoints(layer, final.times(diff))
+function gainOfferings(i) {
+	let q = 0;
+    let a = 0;
+    let b = 0;
+    let c = 0;
+
+    if (i === 3) {
+        a += 3 
+    }
+    if (i >= 2) {
+        b += 2
+    }
+    if (i >= 1) {
+        c += 1
+        c *= Math.min(Math.pow(player.p.times / 10, 2), 1)
+        if (player.p.times >= 5) {
+            c *= Math.max(1, player.p.resetTime / 10)
+        }
+    }
+    q = a + b + c
+
+    
+    q = Math.floor(q) * 100 / 100
+
+    
+    return Math.max(q, 1);
+
 }
+
+function buyableOrder(layer) {
+	let order = []
+	for (id in layers[layer].buyables) {
+		order.push(id)
+	}
+	return order
+}
+
+function updateGenerators(layer, diff) {
+	let taxes;
+	taxes = new Decimal.min(produceTotal.dividedBy(player.taxes), Decimal.pow(10, maxexponent - Decimal.log(player.taxcheck, 10)))
+	if (layer === "c") addPoints(layer, taxes.times(diff / 0.025))
+	for (id in layers[layer].buyables) {
+		if (layer === "p" && id == 11) addSubPoints(layer, "crystals", tmp.p.buyables[11].effect.times(diff))
+		if (layer === "p") {
+			let order = buyableOrder("p")
+			for (id = 1; id <= 4; id++) {
+				player[layer].buyables[order[id-1]].amount = player[layer].buyables[order[id-1]].amount.add(tmp[layer].buyables[order[id]].effect.times(diff))
+			}
+		}
+	}	
+}	
 
 var prevOnReset
 
