@@ -1,3 +1,524 @@
+addLayer("a", {
+    name: "Achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "A", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+        points: new Decimal(0),
+    }},
+    tooltip() {
+      return "Achievements"
+    },
+    color: "#FFFF00",
+    nodeStyle() {return {
+        "background": "radial-gradient(#FFFF00, #d5ad83)" ,
+    }},
+    requires: new Decimal(0), // Can be a function that takes requirement increases into account
+    resource: "Achievement Points", // Name of prestige currency
+    type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+    layerShown() { return true },
+    achievements: {
+        rows: 11,
+        cols: 7,
+        11: {
+            name: "A Loyal Employee",
+            tooltip: "Hire your first worker. Reward: 1 AP",
+            done() {
+                return player.c.buyables[11].bought.gte(1)
+            },
+            onComplete() {
+                addPoints("a",1)
+            }
+        },
+        12: {
+            name: "Small Business",
+            tooltip: "Hire 10 workers. Reward: 2 AP",
+            done() {
+                return player.c.buyables[11].bought.gte(10)
+            },
+            onComplete() {
+                addPoints("a",2)
+            }
+        },
+        13: {
+            name: "Now we're synergizing!",
+            tooltip: "Hire 100 workers. Reward: 4 AP",
+            done() {
+                return player.c.buyables[11].bought.gte(100)
+            },
+            onComplete() {
+                addPoints("a",4)
+            }
+        },
+        14: {
+            name: "Gaining Redundancies",
+            tooltip: "Hire 1,000 workers. Reward: 6 AP",
+            done() {
+                return player.c.buyables[11].bought.gte(1000)
+            },
+            onComplete() {
+                addPoints("a",6)
+            }
+        },
+        15: {
+            name: "A cog in the machine",
+            tooltip: "Hire 5,000 workers. Reward: 8 AP",
+            done() {
+                return player.c.buyables[11].bought.gte(5000)
+            },
+            onComplete() {
+                addPoints("a",8)
+            }
+        },
+        16: {
+            name: "A nail in the machine",
+            tooltip: "Hire 10,000 workers. Reward: 9 AP",
+            done() {
+                return player.c.buyables[11].bought.gte(10000)
+            },
+            onComplete() {
+                addPoints("a",9)
+            }
+        },
+        17: {
+            name: "Are we even in the machine anymore?",
+            tooltip: "Hire 20,000 workers. Reward: 10 AP",
+            done() {
+                return player.c.buyables[11].bought.gte(20000)
+            },
+            onComplete() {
+                addPoints("a",10)
+            }
+        },
+        21: {
+            name: "STONKS!!!",
+            tooltip: "Purchase 1 Investment. Reward: 1 AP",
+            done() {
+                return player.c.buyables[12].bought.gte(1)
+            },
+            onComplete() {
+                addPoints("a",1)
+            }
+        },
+        22: {
+            name: "Planning ahead",
+            tooltip: "Purchase 10 Investments. Reward: 2 AP",
+            done() {
+                return player.c.buyables[12].bought.gte(10)
+            },
+            onComplete() {
+                addPoints("a",2)
+            }
+        },
+        23: {
+            name: "Inside Trading",
+            tooltip: "Purchase 100 Investments. Reward: 4 AP",
+            done() {
+                return player.c.buyables[12].bought.gte(100)
+            },
+            onComplete() {
+                addPoints("a",4)
+            }
+        },
+        24: {
+            name: "Outside Trading?",
+            tooltip: "Purchase 1,000 Investments. Reward: 6 AP",
+            done() {
+                return player.c.buyables[12].bought.gte(1000)
+            },
+            onComplete() {
+                addPoints("a",6)
+            }
+        },
+        25: {
+            name: "Market Takeover",
+            tooltip: "Purchase 5,000 Investments. Reward: 8 AP",
+            done() {
+                return player.c.buyables[12].bought.gte(5000)
+            },
+            onComplete() {
+                addPoints("a",8)
+            }
+        },
+        26: {
+            name: "Trickle-Down Economics",
+            tooltip: "Purchase 10,000 Investments. Reward: 9 AP",
+            done() {
+                return player.c.buyables[12].bought.gte(10000)
+            },
+            onComplete() {
+                addPoints("a",9)
+            }
+        },
+        27: {
+            name: "Eliminated Regulation",
+            tooltip: "Purchase 20,000 Investments. Reward: 10 AP",
+            done() {
+                return player.c.buyables[12].bought.gte(20000)
+            },
+            onComplete() {
+                addPoints("a",10)
+            }
+        },
+        31: {
+            name: "Stationery!",
+            tooltip: "Build 1 Printer. Reward: 1 AP",
+            done() {
+                return player.c.buyables[13].bought.gte(1)
+            },
+            onComplete() {
+                addPoints("a",1)
+            }
+        },
+        32: {
+            name: "Printing Press",
+            tooltip: "Build 10 Printers. Reward: 2 AP",
+            done() {
+                return player.c.buyables[13].bought.gte(10)
+            },
+            onComplete() {
+                addPoints("a",2)
+            }
+        },
+        33: {
+            name: "It prints free money!",
+            tooltip: "Build 100 Printers. Reward: 4 AP",
+            done() {
+                return player.c.buyables[13].bought.gte(100)
+            },
+            onComplete() {
+                addPoints("a",4)
+            }
+        },
+        34: {
+            name: "Solving Our Debts",
+            tooltip: "Build 1,000 Printers. Reward: 6 AP",
+            done() {
+                return player.c.buyables[13].bought.gte(1000)
+            },
+            onComplete() {
+                addPoints("a",6)
+            }
+        },
+        35: {
+            name: "Monopolizing the market",
+            tooltip: "Build 5,000 Printers. Reward: 8 AP",
+            done() {
+                return player.c.buyables[13].bought.gte(5000)
+            },
+            onComplete() {
+                addPoints("a",8)
+            }
+        },
+        36: {
+            name: "We're running out of Ink!",
+            tooltip: "Build 10,000 Printers. Reward: 9 AP",
+            done() {
+                return player.c.buyables[13].bought.gte(10000)
+            },
+            onComplete() {
+                addPoints("a",9)
+            }
+        },
+        37: {
+            name: "3D-printing the universe",
+            tooltip: "Build 20,000 Printers. Reward: 10 AP",
+            done() {
+                return player.c.buyables[13].bought.gte(20000)
+            },
+            onComplete() {
+                addPoints("a",10)
+            }
+        },
+        41: {
+            name: "A national treasure",
+            tooltip: "Establish 1 Coin Mint. Reward: 1 AP",
+            done() {
+                return player.c.buyables[21].bought.gte(1)
+            },
+            onComplete() {
+                addPoints("a",1)
+            }
+        },
+        42: {
+            name: "Now with competition!",
+            tooltip: "Establish 10 Coin Mints. Reward: 2 AP",
+            done() {
+                return player.c.buyables[21].bought.gte(10)
+            },
+            onComplete() {
+                addPoints("a",2)
+            }
+        },
+        43: {
+            name: "Counterfeiting with Style!",
+            tooltip: "Establish 100 Coin Mints. Reward: 4 AP",
+            done() {
+                return player.c.buyables[21].bought.gte(100)
+            },
+            onComplete() {
+                addPoints("a",4)
+            }
+        },
+        44: {
+            name: "Why do we need all these?",
+            tooltip: "Establish 1,000 Coin Mints. Reward: 6 AP",
+            done() {
+                return player.c.buyables[21].bought.gte(1000)
+            },
+            onComplete() {
+                addPoints("a",6)
+            }
+        },
+        45: {
+            name: "No really, why??",
+            tooltip: "Establish 5,000 Coin Mints. Reward: 8 AP",
+            done() {
+                return player.c.buyables[21].bought.gte(5000)
+            },
+            onComplete() {
+                addPoints("a",8)
+            }
+        },
+        46: {
+            name: "Is no one to stop us???",
+            tooltip: "Establish 10,000 Coin Mints. Reward: 9 AP",
+            done() {
+                return player.c.buyables[21].bought.gte(10000)
+            },
+            onComplete() {
+                addPoints("a",9)
+            }
+        },
+        47: {
+            name: "Oh well, time to mint",
+            tooltip: "Establish 20,000 Coin Mints. Reward: 10 AP",
+            done() {
+                return player.c.buyables[21].bought.gte(20000)
+            },
+            onComplete() {
+                addPoints("a",10)
+            }
+        },
+        51: {
+            name: "Newton's Apprentice",
+            tooltip: "Create 1 Alchemy. Reward: 1 AP",
+            done() {
+                return player.c.buyables[22].bought.gte(1)
+            },
+            onComplete() {
+                addPoints("a",1)
+            }
+        },
+        52: {
+            name: "Lab Work",
+            tooltip: "Create 10 Alchemies. Reward: 2 AP",
+            done() {
+                return player.c.buyables[22].bought.gte(10)
+            },
+            onComplete() {
+                addPoints("a",2)
+            }
+        },
+        53: {
+            name: "Satanic Becomings",
+            tooltip: "Create 66 Alchemies. Reward: 4 AP",
+            done() {
+                return player.c.buyables[22].bought.gte(66)
+            },
+            onComplete() {
+                addPoints("a",4)
+            }
+        },
+        54: {
+            name: "Satan Incarnate",
+            tooltip: "Create 666 Alchemies. Reward: 6 AP",
+            done() {
+                return player.c.buyables[22].bought.gte(666)
+            },
+            onComplete() {
+                addPoints("a",6)
+            }
+        },
+        55: {
+            name: "Is this more demonic?",
+            tooltip: "Create 6,666 Alchemies. Reward: 8 AP",
+            done() {
+                return player.c.buyables[22].bought.gte(6666)
+            },
+            onComplete() {
+                addPoints("a",8)
+            }
+        },
+        56: {
+            name: "Golden Paridise",
+            tooltip: "Create 17,777 Alchemies. Reward: 9 AP",
+            done() {
+                return player.c.buyables[22].bought.gte(17777)
+            },
+            onComplete() {
+                addPoints("a",9)
+            }
+        },
+        57: {
+            name: "Unlocking secrets to the world",
+            tooltip: "Create 42,777 Alchemies. Reward: 10 AP",
+            done() {
+                return player.c.buyables[22].bought.gte(42777)
+            },
+            onComplete() {
+                addPoints("a",10)
+            }
+        },
+        61: {
+            name: "Gas gas gas",
+            tooltip: "Purchase 5 Accelerators. Reward: 1 AP",
+            done() {
+                return player.c.buyables[31].bought.gte(5)
+            },
+            onComplete() {
+                addPoints("a",1)
+            }
+        },
+        62: {
+            name: "0 to 25",
+            tooltip: "Purchase 25 Accelerators. Reward: 2 AP",
+            done() {
+                return player.c.buyables[31].bought.gte(25)
+            },
+            onComplete() {
+                addPoints("a",2)
+            }
+        },
+        63: {
+            name: "0 to 100",
+            tooltip: "Purchase 100 Accelerators. Reward: 4 AP",
+            done() {
+                return player.c.buyables[31].bought.gte(100)
+            },
+            onComplete() {
+                addPoints("a",4)
+            }
+        },
+        64: {
+            name: "Highway to Hell",
+            tooltip: "Purchase 666 Accelerators. Reward: 6 AP",
+            done() {
+                return player.c.buyables[31].bought.gte(666)
+            },
+            onComplete() {
+                addPoints("a",6)
+            }
+        },
+        65: {
+            name: "Perhaps you should brake",
+            tooltip: "Purchase 2,000 Accelerators. Reward: 8 AP",
+            done() {
+                return player.c.buyables[31].bought.gte(2000)
+            },
+            onComplete() {
+                addPoints("a",8)
+            }
+        },
+        66: {
+            name: "Exit the vehicle now!",
+            tooltip: "Purchase 12,500 Accelerators. Reward: 9 AP",
+            done() {
+                return player.c.buyables[31].bought.gte(12500)
+            },
+            onComplete() {
+                addPoints("a",9)
+            }
+        },
+        67: {
+            name: "Faster than light",
+            tooltip: "Purchase 100,000 Accelerators. Reward: 10 AP",
+            done() {
+                return player.c.buyables[31].bought.gte(1e5)
+            },
+            onComplete() {
+                addPoints("a",10)
+            }
+        },
+        71: {
+            name: "I've been duped!",
+            tooltip: "Purchase 2 Multipliers. Reward: 1 AP",
+            done() {
+                return player.c.buyables[32].bought.gte(2)
+            },
+            onComplete() {
+                addPoints("a",1)
+            }
+        },
+        72: {
+            name: "Funhouse Mirrors",
+            tooltip: "Purchase 20 Multipliers. Reward: 2 AP",
+            done() {
+                return player.c.buyables[32].bought.gte(20)
+            },
+            onComplete() {
+                addPoints("a",2)
+            }
+        },
+        73: {
+            name: "Friend of binary",
+            tooltip: "Purchase 100 Multipliers. Reward: 4 AP",
+            done() {
+                return player.c.buyables[32].bought.gte(100)
+            },
+            onComplete() {
+                addPoints("a",4)
+            }
+        },
+        74: {
+            name: "Feeling the cost growth yet?",
+            tooltip: "Purchase 500 Multipliers. Reward: 6 AP",
+            done() {
+                return player.c.buyables[32].bought.gte(500)
+            },
+            onComplete() {
+                addPoints("a",6)
+            }
+        },
+        75: {
+            name: "Perhaps you'll feel the cost now",
+            tooltip: "Purchase 2,000 Multipliers. Reward: 8 AP",
+            done() {
+                return player.c.buyables[32].bought.gte(2000)
+            },
+            onComplete() {
+                addPoints("a",8)
+            }
+        },
+        76: {
+            name: "Exponential Synergy",
+            tooltip: "Purchase 12,500 Multipliers. Reward: 9 AP",
+            done() {
+                return player.c.buyables[32].bought.gte(12500)
+            },
+            onComplete() {
+                addPoints("a",9)
+            }
+        },
+        77: {
+            name: "Cloned",
+            tooltip: "Purchase 100,000 Multipliers. Reward: 10 AP",
+            done() {
+                return player.c.buyables[32].bought.gte(1e5)
+            },
+            onComplete() {
+                addPoints("a",10)
+            }
+        },
+    },
+    /*tabFormat: {
+        content: ["main-display",
+        "achievements"]
+    }*/
+
+})
 addLayer("c", {
     name: "coins", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "C", // This appears on the layer's node. Default is the id with the first letter capitalized
@@ -403,7 +924,7 @@ addLayer("c", {
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
             buyMax() {}, // You'll have to handle this yourself if you want
-            style: {'height':'222px', 'backgroundColor':'cyan !important'},
+            style: {'height':'222px'},
         },
         32: {
             title: "Multipliers",// Optional, displayed at the top in a larger font
@@ -442,7 +963,7 @@ addLayer("c", {
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
             buyMax() {}, // You'll have to handle this yourself if you want
-            style: {'height':'222px','backgroundColor':'#ff5170 !important'},
+            style: {'height':'222px'},
         },
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -928,7 +1449,7 @@ addLayer("p", {
 addLayer("o", {
     name: "runes", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "R", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: "0", // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    position: 2, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
