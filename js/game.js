@@ -161,6 +161,7 @@ function layerDataReset(layer, keep = []) {
 	for (thing in storedData) {
 		player[layer][thing] =storedData[thing]
 	}
+	addBonusBuyables(layer)
 }
 
 function resetBuyables(layer){
@@ -182,6 +183,30 @@ function addSubPoints(layer, type, gain) {
 
 function generatePoints(layer, diff) {
 	addPoints(layer, tmp[layer].resetGain.times(diff))
+}
+
+function addBonusBuyables(layer) {
+	switch(layer) {
+		case "c": {
+			// 31: Accelerators 32: Multipliers 33: Accelerator Boosts
+			let totalM = new Decimal(0)
+			let totalA = new Decimal(0)
+			let totalAB = new Decimal(0)
+
+
+
+			totalA = player.p.buyables[33].amount.times(5)
+			if (hasUpgrade("c", 23)) totalA = totalA.add(tmp.c.upgrades[23].effect)
+			player.c.buyables[31].amount = totalA.add(player.c.buyables[31].bought)
+
+			if (hasUpgrade("c", 22)) totalM = totalM.add(tmp.c.upgrades[22].effect)
+			if (hasUpgrade("c", 24)) totalM = totalM.add(tmp.c.upgrades[24].effect)
+			player.c.buyables[32].amount = totalM.add(player.c.buyables[32].bought)
+			
+			break;
+		}
+		default: break;
+	}
 }
 
 function gainOfferings(i) {
@@ -258,6 +283,7 @@ function doReset(layer, force=false) {
 		addPoints(layer, gain)
 		updateMilestones(layer)
 		updateAchievements(layer)
+		
 
 		if (!player[layer].unlocked) {
 			player[layer].unlocked = true;

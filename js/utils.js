@@ -28,6 +28,37 @@ function getCoinMult() {
 	return coinMult
 }
 
+function getBuildingMults(layer, id) {
+	let mult = new Decimal(1)
+	switch(layer) {
+		case "c": {
+			switch(id) {
+				case 11: {
+					if (hasUpgrade("c", 11)) mult = mult.times(upgradeEffect("c", 11))
+					if (hasUpgrade("c", 25)) mult = mult.times(upgradeEffect("c", 25))
+					return mult;
+				}
+				case 12: {
+					if (hasUpgrade("c", 12)) mult = mult.times(upgradeEffect("c", 12))
+					return mult;
+				}
+				case 13: {
+					if (hasUpgrade("c", 13)) mult = mult.times(upgradeEffect("c", 13))
+					return mult;
+				}
+				case 21: {
+					if (hasUpgrade("c", 14)) mult = mult.times(upgradeEffect("c", 14))
+					return mult;
+				}
+				case 22: {
+					if (hasUpgrade("c", 15)) mult = mult.times(upgradeEffect("c", 15))
+					return mult;
+				}
+			}
+		}
+	}
+}
+
 function calculatetaxes() {
 	let a = new Decimal(0);
     let c = 0;
@@ -35,11 +66,11 @@ function calculatetaxes() {
     let f = 1;
     let compareC = 0;
 	let coinMult = getCoinMult()
-	produceFirst = (player.c.buyables[11].amount.times(coinMult).times(hasUpgrade("c", 11) ? upgradeEffect("c", 11) : 1).times(0.25))
-    produceSecond = (player.c.buyables[12].amount.times(coinMult).times(hasUpgrade("c", 12) ? upgradeEffect("c", 12) : 1).times(2.5))
-    produceThird = (player.c.buyables[13].amount.times(coinMult).times(hasUpgrade("c", 13) ? upgradeEffect("c", 13) : 1).times(25))
-    produceFourth = (player.c.buyables[21].amount.times(coinMult).times(hasUpgrade("c", 14) ? upgradeEffect("c", 14) : 1).times(250))
-    produceFifth = (player.c.buyables[22].amount.times(coinMult).times(hasUpgrade("c", 15) ? upgradeEffect("c", 15) : 1).times(2500))
+	produceFirst = (player.c.buyables[11].amount.times(coinMult).times(getBuildingMults("c", 11)).times(0.25))
+    produceSecond = (player.c.buyables[12].amount.times(coinMult).times(getBuildingMults("c", 12)).times(2.5))
+    produceThird = (player.c.buyables[13].amount.times(coinMult).times(getBuildingMults("c", 13)).times(25))
+    produceFourth = (player.c.buyables[21].amount.times(coinMult).times(getBuildingMults("c", 21)).times(250))
+    produceFifth = (player.c.buyables[22].amount.times(coinMult).times(getBuildingMults("c", 22)).times(2500))
     produceTotal = produceFirst.add(produceSecond).add(produceThird).add(produceFourth).add(produceFifth);
 
     if (produceFirst.lessThanOrEqualTo(.0001)) {
@@ -459,4 +490,8 @@ function gridRun(layer, func, data, id) {
 	}
 	else
 		return layers[layer].grid[func];
+}
+
+function layerText(elem, layer, text) {
+	return "<" + elem + " style='color:" + tmp[layer].color + ";text-shadow:0px 0px 10px;'>" + text + "</" + elem + ">"
 }
