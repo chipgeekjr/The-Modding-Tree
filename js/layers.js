@@ -5,6 +5,20 @@ addLayer("a", {
     startData() { return {
         unlocked: true,
         points: new Decimal(0),
+        pTimes: 0,
+        auto: {
+            c: {
+                b1auto: false,
+                b2auto: false,
+                b3auto: false,
+                b4auto: false,
+                b5auto: false,
+                bAauto: false,
+                bMauto: false,
+                bABauto: false,
+            },
+            
+        },
     }},
     tooltip() {
       return "Achievements"
@@ -514,7 +528,7 @@ addLayer("a", {
         },
         81: {
             name: "Leveling up",
-            tooltip: "Prestige for at least 1 Diamond. Reward: 1 AP",
+            tooltip: "Prestige for at least 1 Diamond. Reward: 1 AP, Start with 200 Coins",
             done() {
                 return player.p.bestPointGain.gte(1)
             },
@@ -665,8 +679,8 @@ addLayer("c", {
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
-		points: new Decimal(100),
-        //: new Decimal(0)
+		points: new Decimal(100)
+        
     }},
     color: "#ffd700",
     //requires: new Decimal(10), // Can be a function that takes requirement increases into account
@@ -683,9 +697,21 @@ addLayer("c", {
     gainExp() { // Calculate the exponent on main currency from bonuses
         return new Decimal(1)
     },
+    update(diff) {
+        if(player.a.auto.c.b1auto) buyMaxBuyable("c", 11)
+        if(player.a.auto.c.b2auto) buyMaxBuyable("c", 12)
+        if(player.a.auto.c.b3auto) buyMaxBuyable("c", 13)
+        if(player.a.auto.c.b4auto) buyMaxBuyable("c", 21)
+        if(player.a.auto.c.b5auto) buyMaxBuyable("c", 22)
+        if(player.a.auto.c.bAauto) buyMaxBuyable("c", 31)
+        if(player.a.auto.c.bMauto) buyMaxBuyable("c", 32)
+    },
     tabFormat: {
         Buildings: {
-            content: ["main-display", ["display-text", function() {return "Taxes are dividing your income by "+ layerText("h2", "c", (formatSmall(player.taxes, 4)))}], "buyables"]
+            content: ["main-display", ["display-text", function() {return "Taxes are dividing your income by "+ layerText("h2", "c", (formatSmall(player.taxes, 6)))}], 
+            ["row",[["column", [["buyable", 11],["clickable", 11]]],["column", [["buyable", 12],["clickable", 12]]],["column", [["buyable", 13],["clickable", 13]]]]],
+            ["row",[["column", [["buyable", 21],["clickable", 21]]],["column", [["buyable", 22],["clickable", 22]]]]],
+            ["row",[["column", [["buyable", 31],["clickable", 31]]],["column", [["buyable", 32],["clickable", 32]]], ["column", [["buyable", 33],["clickable", 33]]]]]]
         },
         Upgrades: {
             content: ["main-display", "upgrades"]
@@ -766,7 +792,7 @@ addLayer("c", {
             title: "VI",
             description: "Increase all production based on producer bought.",
             cost: new Decimal(1e20),
-            unlocked() { return player.p.times > 0},
+            unlocked() { return player.a.pTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 let total = new Decimal(0)
@@ -780,7 +806,7 @@ addLayer("c", {
             title: "VII",
             description: "Gain free multipliers based on your purchased Alchemies.",
             cost: new Decimal(1e25),
-            unlocked() { return player.p.times > 0},
+            unlocked() { return player.a.pTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(0)
                 eff = eff.add(Decimal.min(4, Decimal.floor(Decimal.log(player.c.buyables[22].bought.add(1), 10)).add(1)))
@@ -793,7 +819,7 @@ addLayer("c", {
             title: "VIII",
             description: "Gain 1 free Accelerator per 7 purchased Multipliers.",
             cost: new Decimal(1e30),
-            unlocked() { return player.p.times > 0},
+            unlocked() { return player.a.pTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(0)
                 eff = eff.add(Decimal.floor(player.c.buyables[32].bought.div(7)));
@@ -806,7 +832,7 @@ addLayer("c", {
             title: "IX",
             description: "Gain 1 free Multiplier per 10 purchased Accelerators.",
             cost: new Decimal(1e35),
-            unlocked() { return player.p.times > 0},
+            unlocked() { return player.a.pTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(0)
                 eff = eff.add(Decimal.floor(player.c.buyables[31].bought.div(10)));
@@ -819,7 +845,7 @@ addLayer("c", {
             title: "X",
             description: "Improve Workers based on the first 750 purchased Investments.",
             cost: new Decimal(1e45),
-            unlocked() { return player.p.times > 0},
+            unlocked() { return player.a.pTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 eff = eff.times(Decimal.pow(2, Decimal.min(50, player.c.buyables[12].bought.div(15))));
@@ -855,8 +881,8 @@ addLayer("c", {
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(produceFirst) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
+                Coins/Sec: " + format(produceFirst.div(player.taxes).times(40), 3) + "\n\
+                Amount: " + format(player[this.layer].buyables[this.id].amount) + "\n\
                 Bought: " + player[this.layer].buyables[this.id].bought
                 
             },
@@ -879,7 +905,43 @@ addLayer("c", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, 
             style: {'height':'222px'},
         }, 
         12: {
@@ -908,8 +970,8 @@ addLayer("c", {
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(produceSecond) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
+                Coins/Sec: " + format(produceSecond.div(player.taxes).times(40), 3) + "\n\
+                Amount: " + format(player[this.layer].buyables[this.id].amount) + "\n\
                 Bought: " + player[this.layer].buyables[this.id].bought
                 
             },
@@ -932,7 +994,43 @@ addLayer("c", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
         13: {
@@ -961,8 +1059,8 @@ addLayer("c", {
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(produceThird) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
+                Coins/Sec: " + format(produceThird.div(player.taxes).times(40), 3) + "\n\
+                Amount: " + format(player[this.layer].buyables[this.id].amount) + "\n\
                 Bought: " + player[this.layer].buyables[this.id].bought
                 
             },
@@ -985,7 +1083,43 @@ addLayer("c", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         },
         21: {
@@ -1014,8 +1148,8 @@ addLayer("c", {
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(produceFourth) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
+                Coins/Sec: " + format(produceFourth.div(player.taxes).times(40), 3) + "\n\
+                Amount: " + format(player[this.layer].buyables[this.id].amount) + "\n\
                 Bought: " + player[this.layer].buyables[this.id].bought
                 
             },
@@ -1038,7 +1172,43 @@ addLayer("c", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            },// You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
         22: {
@@ -1067,8 +1237,8 @@ addLayer("c", {
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(produceFifth) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
+                Coins/Sec: " + format(produceFifth.div(player.taxes).times(40), 3) + "\n\
+                Amount: " + format(player[this.layer].buyables[this.id].amount) + "\n\
                 Bought: " + player[this.layer].buyables[this.id].bought
                 
             },
@@ -1091,7 +1261,43 @@ addLayer("c", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         },
         31: {
@@ -1108,7 +1314,7 @@ addLayer("c", {
                 return "Cost: " + format(data.cost) + " coins\n\
                 Acceleration Multiplier: " + format(data.effect.mult) + "\n\
                 Acceleration Power: " + format(data.effect.power.sub(1).mul(100)) + "%\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
+                Amount: " + format(player[this.layer].buyables[this.id].amount) + "\n\
                 Bought: " + player[this.layer].buyables[this.id].bought
                 
             },
@@ -1130,7 +1336,42 @@ addLayer("c", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    player[this.layer].buyables[this.id].amount = buyFrom
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                    addBonusBuyables("c")
+                }
+            }, // You'll have to handle this yourself if you want
             style() {
                 if(tmp[this.layer].buyables[this.id].canAfford)return {'height':'222px', 'background-color':'cyan'}
                 return {'height':'222px'}
@@ -1151,7 +1392,7 @@ addLayer("c", {
                 return "Cost: " + format(data.cost) + " coins\n\
                 Multiplier: " + format(data.effect.mult) + "x\n\
                 Multiplier Power: " + format(data.effect.power) + "x\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
+                Amount: " + format(player[this.layer].buyables[this.id].amount) + "\n\
                 Bought: " + player[this.layer].buyables[this.id].bought
                 
             },
@@ -1172,7 +1413,42 @@ addLayer("c", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    player[this.layer].buyables[this.id].amount = buyFrom
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                    addBonusBuyables("c")
+                }
+            }, // You'll have to handle this yourself if you want
             style() {
                 if(tmp[this.layer].buyables[this.id].canAfford)return {'height':'222px', 'background-color':'#ff294e'}
                 return {'height':'222px'}
@@ -1192,7 +1468,7 @@ addLayer("c", {
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(tmp.p.buyables[33].cost) + " diamonds\n\
                 Reset Diamonds and Prestige Upgrades, but add 1.000% Acceleration Power and 5 free Accelerators.\n\
-                Amount: " + player.p.buyables[33].amount + "\n\
+                Amount: " + format(player.p.buyables[33].amount) + "\n\
                 Bought: " + player.p.buyables[33].bought
                 
             },
@@ -1201,14 +1477,22 @@ addLayer("c", {
                 eff = eff.times(player[this.layer].buyables[this.id].amount)
                 return eff
             },
-            unlocked() { return player.p.times > 0 || player.p.buyables[33].amount.gt(0)  }, 
+            unlocked() { return player.a.pTimes > 0 || player.p.buyables[33].amount.gt(0)  }, 
             canAfford() {
                 return player.p.points.gte(tmp.p.buyables[33].cost)},
             buy() { 
                 player.p.buyables[33].amount = player.p.buyables[33].amount.add(1)
                 player.p.buyables[33].bought = player.p.buyables[33].bought.add(1)
+                if (hasAchievement("a", 81)) {
+                    layers.c.startData = function() { 
+                        return {
+                            unlocked: true,
+                            points: new Decimal(200)
+                        }
+                    }
+                }
                 layerDataReset("p", ["buyables"])
-                layerDataReset("c")
+                layerDataReset("c", ["auto"])
                 
                 
             },
@@ -1217,6 +1501,128 @@ addLayer("c", {
                 if(tmp[this.layer].buyables[this.id].canAfford)return {'height':'222px', 'background-color':'#b1ffff'}
                 return {'height':'222px'}
             }
+        },
+    },
+    clickables: {
+        11: {
+            display() {
+                if (player.a.auto.c.b1auto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.b1auto) player.a.auto.c.b1auto = false 
+                else player.a.auto.c.b1auto = true
+            },
+            unlocked() {
+                return hasUpgrade("au", 11)
+            },
+            style: {'height':'50px', 'width':'222px'},
+        },
+        12: {
+            display() {
+                if (player.a.auto.c.b2auto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.b2auto) player.a.auto.c.b2auto = false 
+                else player.a.auto.c.b2auto = true
+            },
+            unlocked() {
+                return hasUpgrade("au", 12)
+            },
+            style: {'height':'50px', 'width':'222px'},
+        },
+        13: {
+            display() {
+                if (player.a.auto.c.b3auto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.b3auto) player.a.auto.c.b3auto = false 
+                else player.a.auto.c.b3auto = true
+            },
+            unlocked() {
+                return hasUpgrade("au", 13)
+            },
+            style: {'height':'50px', 'width':'222px'},
+        },
+        21: {
+            display() {
+                if (player.a.auto.c.b4auto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.b4auto) player.a.auto.c.b4auto = false 
+                else player.a.auto.c.b4auto = true
+            },
+            unlocked() {
+                return hasUpgrade("au", 14)
+            },
+            style: {'height':'50px', 'width':'222px'},
+        },
+        22: {
+            display() {
+                if (player.a.auto.c.b5auto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.b5auto) player.a.auto.c.b5auto = false 
+                else player.a.auto.c.b5auto = true
+            },
+            unlocked() {
+                return hasUpgrade("au", 15)
+            },
+            style: {'height':'50px', 'width':'222px'},
+        },
+        31: {
+            display() {
+                if (player.a.auto.c.bAauto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.bAauto) player.a.auto.c.bAauto = false 
+                else player.a.auto.c.bAauto = true
+            },
+            unlocked() {
+                return hasUpgrade("au", 21)
+            },
+            style: {'height':'50px', 'width':'222px'},
+        },
+        32: {
+            display() {
+                if (player.a.auto.c.bMauto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.bMauto) player.a.auto.c.bMauto = false 
+                else player.a.auto.c.bMauto = true
+            },
+            unlocked() {
+                return hasUpgrade("au", 22)
+            },
+            style: {'height':'50px', 'width':'222px'},
+        },
+        33: {
+            display() {
+                if (player.a.auto.c.bABauto) return "<h2>ON</h2>"
+                else return "<h2>OFF</h2>"
+            },
+            canClick() {return true},
+            onClick() {
+                if (player.a.auto.c.bABauto) player.a.auto.c.bABauto = false 
+                else player.a.auto.c.bABauto = true
+            },
+            unlocked() {
+                return false //hasUpgrade("au", 15)
+            },
+            style: {'height':'50px', 'width':'222px'},
         },
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -1268,10 +1674,22 @@ addLayer("p", {
         Requires: " + format(player.c.total) + "/" + format(tmp.p.requires) + " total coins."
         return text
     },
+    //doReset(resettingLayer) {
+        
+    //},
     onPrestige(gain) {
         addPoints("o", gainOfferings(1))
-        player[this.layer].times += 1
+        player.a.pTimes += 1
         if (tmp[this.layer].getResetGain.gt(player[this.layer].bestPointGain)) player[this.layer].bestPointGain = tmp[this.layer].getResetGain
+        //This is bad, but for now it works.
+        if (hasAchievement("a", 81)) {
+            layers.c.startData = function() { 
+                return {
+                    unlocked: true,
+                    points: new Decimal(200)
+                }
+            }
+        }
     },
     effect() {
         let crystalExponent = 1/3
@@ -1280,7 +1698,12 @@ addLayer("p", {
     },
     tabFormat: {
         Buildings: {
-            content: ["main-display", "prestige-button", ["display-text", function() {return 'You have ' + layerText("h2", "p", format(player.p.crystals)) + ' Crystals, multiplying Coin production by ' + layerText("h2", "p", format(tmp[this.layer].effect)) +"x"}], "buyables"]
+            content: ["main-display", 
+            "prestige-button",  
+            ["row",[["column", [["buyable", 11]]],["column", [["buyable", 12]]],["column", [["buyable", 13]]]]],
+            ["row",[["column", [["buyable", 21]]],["column", [["buyable", 22]]]]],
+            ["display-text", function() {return 'You have ' + layerText("h2", "p", format(player.p.crystals)) + ' Crystals, multiplying Coin production by ' + layerText("h2", "p", format(tmp[this.layer].effect)) +"x"}],
+            ["row",[["column", [["buyable", 31]]],["column", [["buyable", 32]]]]]]
         },
         Upgrades: {
             content: ["main-display", "upgrades"]
@@ -1411,7 +1834,43 @@ addLayer("p", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
         12: {
@@ -1464,7 +1923,43 @@ addLayer("p", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
         13: {
@@ -1517,7 +2012,43 @@ addLayer("p", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         },
         21: {
@@ -1570,7 +2101,43 @@ addLayer("p", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
         22: {
@@ -1623,7 +2190,43 @@ addLayer("p", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         },
         31: {
@@ -1656,7 +2259,43 @@ addLayer("p", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px',},
         },
         32: {
@@ -1690,7 +2329,43 @@ addLayer("p", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         },
         33: {
@@ -1776,42 +2451,28 @@ addLayer("o", {
     buyables: {
         11: {
             title: "Speed Rune",// Optional, displayed at the top in a larger font
-            amount: new Decimal(0),
-            bought: new Decimal(0), 
+            amount: new Decimal(1),
+            bought: new Decimal(1), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(0.03)
-                let r = player.r
-                cost = cost.times(Decimal.pow(1.25, x.bought))
-                if (x.bought.gt(0)) cost = cost.add(1)
-                if (x.bought.gte(1000 * r)) {
-                    cost = cost.times(x.bought).dividedBy(1000).times(1 + 1 / 2);
-                }
-                if (x.bought.gte(5000 * r)) {
-                    cost = cost.times(x.bought).times(10).times(10 + 1 * 10);
-                }
-                if (x.bought.gte(20000 * r)) {
-                    cost = cost.times(Decimal.pow(x.bought, 3)).times(100000).times(100 + 1 * 100)
-                }
-                if (x.bought.gte(250000 * r)) {
-                    cost = cost.times(Decimal.pow(1.03, x.bought - 250000 * r))
-                }
-                return cost.ceil()
+                let cost = new Decimal(1)
+                cost = Decimal.pow(x.bought.div(2), 3)
+                cost = cost.times(((x.bought.times(3.5)).add(100)).div(500))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(200)).div(9)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(400)).div(12)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(600)).div(15)))
+                cost = cost.times(Decimal.max(1, Decimal.pow(1.03, (x.bought.sub(800)).div(4))))
+                return cost
             },
             purchaseLimit: new Decimal(1000),
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
-                return "Level: " + format(data.bought) + "/" + format(data.purchaseLimit) +"\n\
+                return "Level: " + format(player[this.layer].buyables[this.id].bought) + "/" + format(data.purchaseLimit) +"\n\
                 [Bonus: " + format((player[this.layer].buyables[this.id].amount).sub(player[this.layer].buyables[this.id].bought)) + "]\n\
-                +1 in " + format(data.cost) + "EXP"
+                +1 in " + format(data.cost) + " EXP"
                 
             },
             effect(x) {
                 let eff = new Decimal(10)
-                eff = eff.times(x.amount)
-                eff = eff.times(buyableEffect("c", 31).mult)
-                eff = eff.times(buyableEffect("c", 32).mult)
-                if (hasUpgrade("c", 11)) eff = eff.mul(upgradeEffect("c", 11))
-                //eff = eff.div(player.taxes)
                 return eff
             },
             unlocked() { return player[this.layer].unlocked }, 
@@ -1824,50 +2485,77 @@ addLayer("o", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
         12: {
-            title: "Investments",// Optional, displayed at the top in a larger font
-            amount: new Decimal(0),
-            bought: new Decimal(0), 
+            title: "Duplication Rune",// Optional, displayed at the top in a larger font
+            amount: new Decimal(1),
+            bought: new Decimal(1), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(2000)
-                let r = player.r
-                cost = cost.times(Decimal.pow(1.25, x.bought))
-                if (x.bought.gt(0)) cost = cost.add(1)
-                if (x.bought.gte(1000 * r)) {
-                    cost = cost.times(x.bought).dividedBy(1000).times(1 + 1 / 2);
-                }
-                if (x.bought.gte(5000 * r)) {
-                    cost = cost.times(x.bought).times(10).times(10 + 1 * 10);
-                }
-                if (x.bought.gte(20000 * r)) {
-                    cost = cost.times(Decimal.pow(x.bought, 3)).times(100000).times(100 + 1 * 100)
-                }
-                if (x.bought.gte(250000 * r)) {
-                    cost = cost.times(Decimal.pow(1.03, x.bought - 250000 * r))
-                }
-                return cost.ceil()
+                let cost = new Decimal(4)
+                cost = Decimal.pow(x.bought.div(2), 3)
+                cost = cost.times(((x.bought.times(3.5)).add(100)).div(500))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(200)).div(9)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(400)).div(12)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(600)).div(15)))
+                cost = cost.times(Decimal.max(1, Decimal.pow(1.03, (x.bought.sub(800)).div(4))))
+                return cost
             },
+            purchaseLimit: new Decimal(1000),
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
-                return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(data.effect) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
-                Bought: " + player[this.layer].buyables[this.id].bought
+                return "Level: " + format(player[this.layer].buyables[this.id].bought) + "/" + format(data.purchaseLimit) +"\n\
+                [Bonus: " + format((player[this.layer].buyables[this.id].amount).sub(player[this.layer].buyables[this.id].bought)) + "]\n\
+                +1 in " + format(data.cost) + " EXP"
                 
             },
             effect(x) {
-                let eff = new Decimal(100)
+                let eff = new Decimal(10)
                 eff = eff.times(x.amount)
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
-                if (hasUpgrade("c", 12)) eff = eff.mul(upgradeEffect("c", 12))
+                if (hasUpgrade("c", 11)) eff = eff.mul(upgradeEffect("c", 11))
                 //eff = eff.div(player.taxes)
                 return eff
             },
-            unlocked() { return player[this.layer].best.gte(1000) || player[this.layer].buyables[this.id].amount.gt(0) }, 
+            unlocked() { return false }, 
             canAfford() {
                 return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
             buy() { 
@@ -1877,50 +2565,77 @@ addLayer("o", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
         13: {
-            title: "Printers",// Optional, displayed at the top in a larger font
-            amount: new Decimal(0),
-            bought: new Decimal(0), 
+            title: "Speed Rune",// Optional, displayed at the top in a larger font
+            amount: new Decimal(1),
+            bought: new Decimal(1), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(40000)
-                let r = player.r
-                cost = cost.times(Decimal.pow(1.25, x.bought))
-                if (x.bought.gt(0)) cost = cost.add(1)
-                if (x.bought.gte(1000 * r)) {
-                    cost = cost.times(x.bought).dividedBy(1000).times(1 + 1 / 2);
-                }
-                if (x.bought.gte(5000 * r)) {
-                    cost = cost.times(x.bought).times(10).times(10 + 1 * 10);
-                }
-                if (x.bought.gte(20000 * r)) {
-                    cost = cost.times(Decimal.pow(x.bought, 3)).times(100000).times(100 + 1 * 100)
-                }
-                if (x.bought.gte(250000 * r)) {
-                    cost = cost.times(Decimal.pow(1.03, x.bought - 250000 * r))
-                }
-                return cost.ceil()
+                let cost = new Decimal(9)
+                cost = Decimal.pow(x.bought.div(2), 3)
+                cost = cost.times(((x.bought.times(3.5)).add(100)).div(500))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(200)).div(9)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(400)).div(12)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(600)).div(15)))
+                cost = cost.times(Decimal.max(1, Decimal.pow(1.03, (x.bought.sub(800)).div(4))))
+                return cost
             },
+            purchaseLimit: new Decimal(1000),
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
-                return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(data.effect) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
-                Bought: " + player[this.layer].buyables[this.id].bought
+                return "Level: " + format(player[this.layer].buyables[this.id].bought) + "/" + format(data.purchaseLimit) +"\n\
+                [Bonus: " + format((player[this.layer].buyables[this.id].amount).sub(player[this.layer].buyables[this.id].bought)) + "]\n\
+                +1 in " + format(data.cost) + " EXP"
                 
             },
             effect(x) {
-                let eff = new Decimal(1000)
+                let eff = new Decimal(10)
                 eff = eff.times(x.amount)
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
-                if (hasUpgrade("c", 13)) eff = eff.mul(upgradeEffect("c", 13))
+                if (hasUpgrade("c", 11)) eff = eff.mul(upgradeEffect("c", 11))
                 //eff = eff.div(player.taxes)
                 return eff
             },
-            unlocked() { return player[this.layer].best.gte(20000) || player[this.layer].buyables[this.id].amount.gt(0)  }, 
+            unlocked() { return false }, 
             canAfford() {
                 return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
             buy() { 
@@ -1930,50 +2645,77 @@ addLayer("o", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         },
-        21: {
-            title: "Coin Mints",// Optional, displayed at the top in a larger font
-            amount: new Decimal(0),
-            bought: new Decimal(0), 
+        14: {
+            title: "Speed Rune",// Optional, displayed at the top in a larger font
+            amount: new Decimal(1),
+            bought: new Decimal(1), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(8e5)
-                let r = player.r
-                cost = cost.times(Decimal.pow(1.25, x.bought))
-                if (x.bought.gt(0)) cost = cost.add(1)
-                if (x.bought.gte(1000 * r)) {
-                    cost = cost.times(x.bought).dividedBy(1000).times(1 + 1 / 2);
-                }
-                if (x.bought.gte(5000 * r)) {
-                    cost = cost.times(x.bought).times(10).times(10 + 1 * 10);
-                }
-                if (x.bought.gte(20000 * r)) {
-                    cost = cost.times(Decimal.pow(x.bought, 3)).times(100000).times(100 + 1 * 100)
-                }
-                if (x.bought.gte(250000 * r)) {
-                    cost = cost.times(Decimal.pow(1.03, x.bought - 250000 * r))
-                }
-                return cost.ceil()
+                let cost = new Decimal(16)
+                cost = Decimal.pow(x.bought.div(2), 3)
+                cost = cost.times(((x.bought.times(3.5)).add(100)).div(500))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(200)).div(9)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(400)).div(12)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(600)).div(15)))
+                cost = cost.times(Decimal.max(1, Decimal.pow(1.03, (x.bought.sub(800)).div(4))))
+                return cost
             },
+            purchaseLimit: new Decimal(1000),
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
-                return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(data.effect) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
-                Bought: " + player[this.layer].buyables[this.id].bought
+                return "Level: " + format(player[this.layer].buyables[this.id].bought) + "/" + format(data.purchaseLimit) +"\n\
+                [Bonus: " + format((player[this.layer].buyables[this.id].amount).sub(player[this.layer].buyables[this.id].bought)) + "]\n\
+                +1 in " + format(data.cost) + " EXP"
                 
             },
             effect(x) {
-                let eff = new Decimal(10000)
+                let eff = new Decimal(10)
                 eff = eff.times(x.amount)
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
-                if (hasUpgrade("c", 14)) eff = eff.mul(upgradeEffect("c", 14))
+                if (hasUpgrade("c", 11)) eff = eff.mul(upgradeEffect("c", 11))
                 //eff = eff.div(player.taxes)
                 return eff
             },
-            unlocked() { return player[this.layer].best.gte(4e5) || player[this.layer].buyables[this.id].amount.gt(0)  }, 
+            unlocked() { return false }, 
             canAfford() {
                 return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
             buy() { 
@@ -1983,50 +2725,77 @@ addLayer("o", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         }, 
-        22: {
-            title: "Alchemies",// Optional, displayed at the top in a larger font
-            amount: new Decimal(0),
-            bought: new Decimal(0), 
+        15: {
+            title: "Speed Rune",// Optional, displayed at the top in a larger font
+            amount: new Decimal(1),
+            bought: new Decimal(1), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(16e6)
-                let r = player.r
-                cost = cost.times(Decimal.pow(1.25, x.bought))
-                if (x.bought.gt(0)) cost = cost.add(1)
-                if (x.bought.gte(1000 * r)) {
-                    cost = cost.times(x.bought).dividedBy(1000).times(1 + 1 / 2);
-                }
-                if (x.bought.gte(5000 * r)) {
-                    cost = cost.times(x.bought).times(10).times(10 + 1 * 10);
-                }
-                if (x.bought.gte(20000 * r)) {
-                    cost = cost.times(Decimal.pow(x.bought, 3)).times(100000).times(100 + 1 * 100)
-                }
-                if (x.bought.gte(250000 * r)) {
-                    cost = cost.times(Decimal.pow(1.03, x.bought - 250000 * r))
-                }
-                return cost.ceil()
+                let cost = new Decimal(1000)
+                cost = Decimal.pow(x.bought.div(2), 3)
+                cost = cost.times(((x.bought.times(3.5)).add(100)).div(500))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(200)).div(9)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(400)).div(12)))
+                cost = cost.times(Decimal.max(1, (x.bought.sub(600)).div(15)))
+                cost = cost.times(Decimal.max(1, Decimal.pow(1.03, (x.bought.sub(800)).div(4))))
+                return cost
             },
+            purchaseLimit: new Decimal(1000),
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
-                return "Cost: " + format(data.cost) + " coins\n\
-                Coins/Sec: " + format(data.effect) + "\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
-                Bought: " + player[this.layer].buyables[this.id].bought
+                return "Level: " + format(player[this.layer].buyables[this.id].bought) + "/" + format(data.purchaseLimit) +"\n\
+                [Bonus: " + format((player[this.layer].buyables[this.id].amount).sub(player[this.layer].buyables[this.id].bought)) + "]\n\
+                +1 in " + format(data.cost) + " EXP"
                 
             },
             effect(x) {
-                let eff = new Decimal(1e5)
+                let eff = new Decimal(10)
                 eff = eff.times(x.amount)
                 eff = eff.times(buyableEffect("c", 31).mult)
                 eff = eff.times(buyableEffect("c", 32).mult)
-                if (hasUpgrade("c", 15)) eff = eff.mul(upgradeEffect("c", 15))
-                eff = eff.div(player.taxes)
+                if (hasUpgrade("c", 11)) eff = eff.mul(upgradeEffect("c", 11))
+                //eff = eff.div(player.taxes)
                 return eff
             },
-            unlocked() { return player[this.layer].best.gte(8e6) || player[this.layer].buyables[this.id].amount.gt(0)  }, 
+            unlocked() { return false }, 
             canAfford() {
                 return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
             buy() { 
@@ -2036,92 +2805,311 @@ addLayer("o", {
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
                 player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
             },
-            buyMax() {}, // You'll have to handle this yourself if you want
+            buyMax() {
+                let buyStart = player[this.layer].buyables[this.id].bought;
+                let buyInc = 1;
+                let x = {}
+                x.bought = buyStart.add(buyInc)
+                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                while (player.c.points.gte(cashToBuy)) {
+                    // then multiply by 4 until it reaches just above the amount needed
+                    buyInc = buyInc * 4;
+                    x.bought = buyStart.add(buyInc)
+                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
+                }
+                let stepdown = Math.floor(buyInc / 8);
+                while (stepdown !== 0) {
+                    // if step down would push it below out of expense range then divide step down by 2
+                    x.bought = buyStart.add(buyInc - stepdown)
+                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
+                        stepdown = Math.floor(stepdown / 2);
+                    } else {
+                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
+                    }
+                }
+                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
+                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
+                x.bought = buyFrom
+                let thisCost = layers[this.layer].buyables[this.id].cost(x);
+                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
+                    x.bought = buyFrom
+                    player[this.layer].points = player[this.layer].points.sub(thisCost);
+                    if (player[this.layer].buyables[this.id].amount.eq(player[this.layer].buyables[this.id].bought)){
+                        player[this.layer].buyables[this.id].amount = buyFrom
+                    }
+                    player[this.layer].buyables[this.id].bought = buyFrom
+                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
+                    thisCost = layers[this.layer].buyables[this.id].cost(x);
+                }
+            }, // You'll have to handle this yourself if you want
             style: {'height':'222px'},
         },
-        31: {
-            title: "Accelerators",// Optional, displayed at the top in a larger font
-            amount: new Decimal(0),
-            bought: new Decimal(0), 
-            cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(500)
-                cost = cost.times(Decimal.pow(4, x.bought))
-                return cost.ceil()
-            },
-            display() { // Everything else displayed in the buyable button after the title
-                let data = tmp[this.layer].buyables[this.id]
-                return "Cost: " + format(data.cost) + " coins\n\
-                Acceleration Multiplier: " + format(data.effect.mult) + "\n\
-                Acceleration Power: " + format(data.effect.power.sub(1).mul(100)) + "%\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
-                Bought: " + player[this.layer].buyables[this.id].bought
-                
-            },
-            effect(x) {
-                let eff = {}
-                eff.power = new Decimal(1.1)
-                eff.mult = new Decimal(1)
-                eff.mult = eff.power.pow(x.amount)
-                return eff
-            },
-            unlocked() { return player[this.layer].best.gte(250) || player[this.layer].buyables[this.id].amount.gt(0)  }, 
-            canAfford() {
-                return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
-            buy() { 
-                cost = tmp[this.layer].buyables[this.id].cost
-                player[this.layer].points = player[this.layer].points.sub(cost)	
-                player[this.layer].buyables[this.id].amount = player[this.layer].buyables[this.id].amount.add(1)
-                player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
-                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
-            },
-            buyMax() {}, // You'll have to handle this yourself if you want
-            style: {'height':'222px', 'backgroundColor':'cyan'},
-        },
-        32: {
-            title: "Multipliers",// Optional, displayed at the top in a larger font
-            color: "#00ffff",
-            amount: new Decimal(0),
-            bought: new Decimal(0), 
-            cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(1e5)
-                cost = cost.times(Decimal.pow(10, x.bought))
-                return cost.ceil()
-            },
-            display() { // Everything else displayed in the buyable button after the title
-                let data = tmp[this.layer].buyables[this.id]
-                return "Cost: " + format(data.cost) + " coins\n\
-                Multiplier: " + format(data.effect.mult) + "x\n\
-                Multiplier Power: " + format(data.effect.power) + "x\n\
-                Amount: " + player[this.layer].buyables[this.id].amount + "\n\
-                Bought: " + player[this.layer].buyables[this.id].bought
-                
-            },
-            effect(x) {
-                let eff = {}
-                eff.power = new Decimal(2)
-                eff.mult = new Decimal(1)
-                eff.mult = eff.power.pow(x.amount)
-                return eff
-            },
-            unlocked() { return player[this.layer].best.gte(5e4) || player[this.layer].buyables[this.id].amount.gt(0)  }, 
-            canAfford() {
-                return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
-            buy() { 
-                cost = tmp[this.layer].buyables[this.id].cost
-                player[this.layer].points = player[this.layer].points.sub(cost)	
-                player[this.layer].buyables[this.id].amount = player[this.layer].buyables[this.id].amount.add(1)
-                player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
-                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
-            },
-            buyMax() {}, // You'll have to handle this yourself if you want
-            style: {'height':'222px','backgroundColor':'#ff5170'},
-        },
-    },
+    },   
     row: "side", // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
         //{key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return player.p.best.gt(0)||player[this.layer].best.gt(0)}
+})
+
+addLayer("g", {
+    name: "gen", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "G", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 3, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    tooltip() {
+        return "Generator Shop"
+      },
+    resetsNothing: true,
+    color: "gray",
+    upgrades: {
+        11: {
+            title: "I",
+            description: "Alchemies will produce Coin Mints.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e12),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        12: {
+            title: "II",
+            description: "Coin Mints will produce Printers.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e16),
+            unlocked() { return hasUpgrade("g", 11)},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        13: {
+            title: "III",
+            description: "Printers will produce Investments.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e20),
+            unlocked() { return  hasUpgrade("g", 11)},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        14: {
+            title: "IV",
+            description: "Investments will produce Workers.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e30),
+            unlocked() { return  hasUpgrade("g", 11)},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        15: {
+            title: "V",
+            description: "Purchased Workers will produce Alchemies.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e50),
+            unlocked() { return  hasUpgrade("g", 11)},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+    },
+    tabFormat: ["upgrades"],
+    row: "side",
+    layerShown() {
+        return player.a.pTimes > 0
+    }
+})
+
+addLayer("au", {
+    name: "auto", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "Au", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 4, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    tooltip() {
+        return "Automation Shop"
+      },
+    resetsNothing: true,
+    color: "crimson",
+    upgrades: {
+        11: {
+            title: "I",
+            description: "Automatically buy Workers if affordable.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1000),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        12: {
+            title: "II",
+            description: "Automatically buy Investments if affordable.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e6),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        13: {
+            title: "III",
+            description: "Automatically buy Printers if affordable.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e9),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        14: {
+            title: "IV",
+            description: "Automatically buy Coin Mints if affordable.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e12),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        15: {
+            title: "V",
+            description: "Automatically buy Alchemies if affordable.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e15),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        21: {
+            title: "VI",
+            description: "Automatically buy Accelerators if affordable.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e20),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        22: {
+            title: "VII",
+            description: "Automatically buy Multipliers if affordable.",
+            currencyLocation() {return player.p},
+            currencyDisplayName: "diamonds",
+            currencyInternalName: "points",
+            cost: new Decimal(1e30),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0)
+                return eff;
+            },
+            canAfford() {
+                return player.p.points.gt(layers[this.layer].upgrades[this.id].cost)
+            },
+            
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+    },
+    tabFormat: ["upgrades"],
+    row: "side",
+    layerShown() {
+        return player.a.pTimes > 0
+    }
 })
 
 

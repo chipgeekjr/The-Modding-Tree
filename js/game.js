@@ -223,8 +223,8 @@ function gainOfferings(i) {
     }
     if (i >= 1) {
         c += 1
-        c *= Math.min(Math.pow(player.p.times / 10, 2), 1)
-        if (player.p.times >= 5) {
+        c *= Math.min(Math.pow(player.a.pTimes / 10, 2), 1)
+        if (player.a.pTimes >= 5) {
             c *= Math.max(1, player.p.resetTime / 10)
         }
     }
@@ -247,9 +247,13 @@ function buyableOrder(layer) {
 }
 
 function updateGenerators(layer, diff) {
-	let taxes;
 	taxes = new Decimal.min(produceTotal.dividedBy(player.taxes), Decimal.pow(10, maxexponent - Decimal.log(player.taxcheck, 10)))
 	if (layer === "c") addPoints(layer, taxes.times(diff / 0.025))
+	if(hasUpgrade("g", 11)) player.c.buyables[21].amount = player.c.buyables[21].amount.add(player.c.buyables[22].amount)
+	if(hasUpgrade("g", 12)) player.c.buyables[13].amount = player.c.buyables[13].amount.add(player.c.buyables[21].amount)
+	if(hasUpgrade("g", 13)) player.c.buyables[12].amount = player.c.buyables[12].amount.add(player.c.buyables[13].amount)
+	if(hasUpgrade("g", 14)) player.c.buyables[11].amount = player.c.buyables[11].amount.add(player.c.buyables[12].amount)
+	if(hasUpgrade("g", 15)) player.c.buyables[22].amount = player.c.buyables[22].amount.add(player.c.buyables[11].bought)
 	for (id in layers[layer].buyables) {
 		if (layer === "p" && id == 11) addSubPoints(layer, "crystals", tmp.p.buyables[11].effect.times(diff))
 		if (layer === "p") {

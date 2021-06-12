@@ -109,6 +109,22 @@ function calculatetaxes() {
 	
 }
 
+function smallestIncDecimal(x = 0) {
+    if (x.lt(new Decimal(2).pow(53))) {
+        return new Decimal(1);
+    } else {
+        return new Decimal(2).pow(Decimal.ceil(Decimal.log2(x).sub(53)))
+    }
+}
+
+function smallestInc(x = 0) {
+    if (x < 2**53) {
+        return 1;
+    } else {
+        return 2**Math.ceil(Math.log2(x)-53)
+    }
+}
+
 function canAffordPurchase(layer, thing, cost) {
 
 	if (thing.currencyInternalName) {

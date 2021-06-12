@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2.2",
-	name: "Boost",
+	num: "0.2.3",
+	name: "Automated Generation",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -30,7 +30,10 @@ let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.2.2</h3><br>
 		- Added Accelerator Boosts.<br>
 		- Added a row of Coin upgrades.<br>
-		- Added 2 rows of achievements.<br>`
+		- Added 2 rows of achievements.<br>
+	<h3>v0.2.3</h3><br>
+		- Added Autobuyers.<br>
+		- Added Generator Upgrades.<br>`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -48,15 +51,24 @@ function canGenPoints(){
 }
 
 // Calculate points/sec!
+let producePerSecond = new Decimal(0)
+let produceFirst = new Decimal(0)
+let produceSecond = new Decimal(0)
+let produceThird = new Decimal(0)
+let produceFourth = new Decimal(0)
+let produceFifth = new Decimal(0)
+let taxes = new Decimal(0)
+
 function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 
 	let gain = new Decimal(0)
-	for(id in tmp.c.buyables) {
+	/*for(id in tmp.c.buyables) {
 		if(id != (31||32)) gain = gain.add(tmp.c.buyables[id].effect)
 	}
-	gain = gain.mul(getCoinMult())
+	gain = gain.mul(getCoinMult())*/
+	gain = taxes.times(40)
 	return gain
 }
 
