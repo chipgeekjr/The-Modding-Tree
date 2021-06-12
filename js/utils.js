@@ -93,6 +93,7 @@ function calculatetaxes() {
 
 	let exponent = 1;
     exponent *= e;
+	exponent *= (0.001 + .999 * (Math.pow(6, -(player.o.buyables[12].amount.mag * 1) / 1000)))
 	exponent *= f;
 	maxexponent = Math.floor(275 / (Decimal.log(1.01, 10) * exponent)) - 1
     a = Math.min(maxexponent, Math.floor(Decimal.log(produceTotal.add(1), 10)));

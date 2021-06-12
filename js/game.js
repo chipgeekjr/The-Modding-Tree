@@ -197,16 +197,60 @@ function addBonusBuyables(layer) {
 
 			totalA = player.p.buyables[33].amount.times(5)
 			if (hasUpgrade("c", 23)) totalA = totalA.add(tmp.c.upgrades[23].effect)
-			player.c.buyables[31].amount = totalA.add(player.c.buyables[31].bought)
+			totalA = totalA.add(tmp.o.buyables[11].effect.eff1)
+			if(hasUpgrade("p", 11)) totalA = totalA.add(5)
+			if(hasUpgrade("p", 12)) totalA = totalA.add(4)
+			if(hasUpgrade("p", 13)) totalA = totalA.add(3)
+			if(hasUpgrade("p", 14)) totalA = totalA.add(2)
+			if(hasUpgrade("p", 15)) totalA = totalA.add(1)
+			if(hasUpgrade("p", 22)) totalA = totalA.add(tmp.p.upgrades[22].effect)
+			if(hasUpgrade("p", 24)) totalA = totalA.add(tmp.p.upgrades[24].effect)
+			totalA = totalA.times(getPercentAccelerator())
+			player.c.buyables[31].amount = totalA.add(player.c.buyables[31].bought).floor()
 
 			if (hasUpgrade("c", 22)) totalM = totalM.add(tmp.c.upgrades[22].effect)
 			if (hasUpgrade("c", 24)) totalM = totalM.add(tmp.c.upgrades[24].effect)
-			player.c.buyables[32].amount = totalM.add(player.c.buyables[32].bought)
+			totalM = totalM.add(tmp.o.buyables[12].effect.eff1)
+			if(hasUpgrade("p", 11)) totalM = totalM.add(1)
+			if(hasUpgrade("p", 12)) totalM = totalM.add(1)
+			if(hasUpgrade("p", 13)) totalM = totalM.add(1)
+			if(hasUpgrade("p", 14)) totalM = totalM.add(1)
+			if(hasUpgrade("p", 15)) totalM = totalM.add(1)
+			if(hasUpgrade("p", 23)) totalM = totalM.add(tmp.p.upgrades[23].effect)
+			if(hasUpgrade("p", 25)) totalM = totalM.add(tmp.p.upgrades[25].effect)
+			totalM = totalM.times(getPercentMultiplier())
+			player.c.buyables[32].amount = totalM.add(player.c.buyables[32].bought).floor()
+
+			totalAB = totalAB.add(tmp.o.buyables[11].effect.eff3)
+			if(hasUpgrade("p", 21)) totalAB = totalAB.add(1)
+			player.p.buyables[33].amount = totalAB.add(player.p.buyables[33].bought)
 			
 			break;
 		}
 		default: break;
 	}
+}
+// 1.00 = 100%, 0.10 = 10%, 0.01 = 1% ect.
+function getPercentAccelerator() {
+	let percent = new Decimal(1)
+	percent = percent.add(tmp.o.buyables[11].effect.eff2.div(100))
+	if(hasUpgrade("p", 11)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 12)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 13)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 14)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 15)) percent = percent.add(0.01)
+	return percent
+}
+
+function getPercentMultiplier() {
+	let percent = new Decimal(1)
+	percent = percent.add(tmp.o.buyables[12].effect.eff2.div(100))
+	if(hasUpgrade("p", 11)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 12)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 13)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 14)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 15)) percent = percent.add(0.01)
+	return percent
 }
 
 function gainOfferings(i) {

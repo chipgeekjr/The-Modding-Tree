@@ -58,7 +58,7 @@ addLayer("a", {
         },
         13: {
             name: "Now we're synergizing!",
-            tooltip: "Hire 100 workers. Reward: 4 AP",
+            tooltip: "Hire 100 workers. Reward: 4 AP. Gain +.05% to Accelerator Power.",
             done() {
                 return player.c.buyables[11].bought.gte(100)
             },
@@ -128,7 +128,7 @@ addLayer("a", {
         },
         23: {
             name: "Inside Trading",
-            tooltip: "Purchase 100 Investments. Reward: 4 AP",
+            tooltip: "Purchase 100 Investments. Reward: 4 AP. Gain +.10% to Accelerator Power.",
             done() {
                 return player.c.buyables[12].bought.gte(100)
             },
@@ -198,7 +198,7 @@ addLayer("a", {
         },
         33: {
             name: "It prints free money!",
-            tooltip: "Build 100 Printers. Reward: 4 AP",
+            tooltip: "Build 100 Printers. Reward: 4 AP. Gain +.15% to Accelerator Power.",
             done() {
                 return player.c.buyables[13].bought.gte(100)
             },
@@ -268,7 +268,7 @@ addLayer("a", {
         },
         43: {
             name: "Counterfeiting with Style!",
-            tooltip: "Establish 100 Coin Mints. Reward: 4 AP",
+            tooltip: "Establish 100 Coin Mints. Reward: 4 AP. Gain +.20% to Accelerator Power.",
             done() {
                 return player.c.buyables[21].bought.gte(100)
             },
@@ -338,7 +338,7 @@ addLayer("a", {
         },
         53: {
             name: "Satanic Becomings",
-            tooltip: "Create 66 Alchemies. Reward: 4 AP",
+            tooltip: "Create 66 Alchemies. Reward: 4 AP. Gain +.25% to Accelerator Power.",
             done() {
                 return player.c.buyables[22].bought.gte(66)
             },
@@ -1322,6 +1322,11 @@ addLayer("c", {
                 let eff = {}
                 eff.power = new Decimal(1.1)
                 eff.power = eff.power.add(tmp.p.buyables[33].effect)
+                if(hasAchievement("a", 13)) eff.power = eff.power.add(0.0005)
+                if(hasAchievement("a", 23)) eff.power = eff.power.add(0.0010)
+                if(hasAchievement("a", 33)) eff.power = eff.power.add(0.0015)
+                if(hasAchievement("a", 43)) eff.power = eff.power.add(0.0020)
+                if(hasAchievement("a", 53)) eff.power = eff.power.add(0.0025)
                 eff.mult = new Decimal(1)
                 eff.mult = eff.power.pow(x.amount)
                 return eff
@@ -1709,78 +1714,132 @@ addLayer("p", {
             content: ["main-display", "upgrades"]
         },
     },
-    /*upgrades: {
+    upgrades: {
         11: {
             title: "I",
-            description: "Increase production of Workers per producer bought.",
+            description: "Gain 1 Multiplier and 5 Accelerators plus 1% more free Multipliers and Accelerators.",
+            cost: new Decimal(100),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        12: {
+            title: "II",
+            description: "Gain 1 Multiplier and 4 Accelerators plus 1% more free Multipliers and Accelerators.",
+            cost: new Decimal(1000),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        13: {
+            title: "III",
+            description: "Gain 1 Multiplier and 3 Accelerators plus 1% more free Multipliers and Accelerators.",
+            cost: new Decimal(1e4),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        14: {
+            title: "IV",
+            description: "Gain 1 Multiplier and 2 Accelerators plus 1% more free Multipliers and Accelerators.",
+            cost: new Decimal(1e5),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+        },
+        15: {
+            title: "V",
+            description: "Gain 1 Multiplier and 1 Accelerator plus 1% more free Multipliers and Accelerators.",
             cost: new Decimal(1e6),
             unlocked() { return true},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
-                let total = new Decimal(0)
-                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
-                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total)))
                 return eff;
             },
-            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            onPurchase() { addBonusBuyables("c") },
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
         },
-        12: {
-            title: "II",
-            description: "Increase production of Investments per producer bought.",
+        21: {
+            title: "VI",
+            description: "Gain a free Accelerator Boost.",
             cost: new Decimal(1e7),
             unlocked() { return true},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
-                let total = new Decimal(0)
-                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
-                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total)))
                 return eff;
             },
-            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            onPurchase() { addBonusBuyables("c") },
+            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
         },
-        13: {
-            title: "III",
-            description: "Increase production of Printers per producer bought.",
-            cost: new Decimal(1e8),
-            unlocked() { return true},
-            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
-                let eff = new Decimal(1)
-                let total = new Decimal(0)
-                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
-                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total)))
-                return eff;
-            },
-            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
-        },
-        14: {
-            title: "IV",
-            description: "Increase production of Mints per producer bought.",
+        22: {
+            title: "VII",
+            description: "Gain free Accelerators based on unspent Coins.",
             cost: new Decimal(1e10),
             unlocked() { return true},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
-                let total = new Decimal(0)
-                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
-                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total)))
+                eff = eff.add(Decimal.min((250, Decimal.floor(Decimal.log(player.c.points.add(1), 1e3))).add(Decimal.min(1750, Decimal.max(0, Decimal.floor(Decimal.log(player.c.points.add(1), 1e15)).sub(50))))))
                 return eff;
             },
-            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "+" + format(this.effect())+" Accelerators." }, // Add formatting to the effect
         },
-        15: {
-            title: "V",
-            description: "Increase production of Alchemies per producer bought.",
-            cost: new Decimal(1e12),
+        23: {
+            title: "VIII",
+            description: "Gain a free Multiplier per 160 Coin producers bought.",
+            cost: new Decimal(1e13),
             unlocked() { return true},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
-                let total = new Decimal(0)
-                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
-                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total)))
+                eff = eff.add(Decimal.floor(Decimal.min(1000, (player.c.buyables[11].bought.add(player.c.buyables[12].bought.add(player.c.buyables[13].bought.add(player.c.buyables[21].bought.add(player.c.buyables[22].bought))))).div(160))))
                 return eff;
             },
-            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "+" + format(this.effect())+" Multipliers." }, // Add formatting to the effect
         },
-    },*/
+        24: {
+            title: "IX",
+            description: "Gain a free Accelerator per 80 Coin producers bought.",
+            cost: new Decimal(1e20),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                eff = eff.add(Decimal.floor(Decimal.min(2000, (player.c.buyables[11].bought.add(player.c.buyables[12].bought.add(player.c.buyables[13].bought.add(player.c.buyables[21].bought.add(player.c.buyables[22].bought))))).div(80))))
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "+" + format(this.effect())+" Accelerators." }, // Add formatting to the effect
+        },
+        25: {
+            title: "X",
+            description: "Gain free Multipliers based on unspent Coins.",
+            cost: new Decimal(1e30),
+            unlocked() { return true},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                eff = eff.add(Decimal.min((75, Decimal.floor(Decimal.log(player.c.points.add(1), 1e10))).add(Decimal.min(925, Decimal.floor(Decimal.log(player.c.points.add(1), 1e30))))))
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "+" + format(this.effect())+" Multipliers." }, // Add formatting to the effect
+        },
+    },
     buyables: {
         11: {
             title: "Refineries",// Optional, displayed at the top in a larger font
@@ -2445,7 +2504,10 @@ addLayer("o", {
     },
     tabFormat: {
         Runes: {
-            content: ["main-display", "buyables"]
+            content: ["main-display", ["display-text", function() {return "Each offering is worth "+ layerText("h2", "o", (format(1))) + " EXP"}], "buyables",
+        "empty", "empty", ["display-text", function() {return "=====RUNE EFFECT SUMMARY====="}],
+        ["display-text", function() {return "Speed Rune Bonus: +" + format(tmp[this.layer].buyables[11].effect.eff1, 0) + " Accelerators, +" + format(tmp[this.layer].buyables[11].effect.eff2) + "% Accelerators, +" + format(tmp[this.layer].buyables[11].effect.eff3, 0) + " Accelerator Boosts."}],
+        ["display-text", function() {return "Duplication Rune Bonus: +" + format(tmp[this.layer].buyables[12].effect.eff1, 0) + " Multipliers, +" + format(tmp[this.layer].buyables[12].effect.eff2) + "% Multipliers, -" + format((99.9 * (1 - Math.pow(6, -(player[this.layer].buyables[12].amount.mag * 1) / 1000))), 4) + "% Tax Growth."}]]
         },  
     },
     buyables: {
@@ -2471,8 +2533,17 @@ addLayer("o", {
                 +1 in " + format(data.cost) + " EXP"
                 
             },
+            tooltip() {
+                return "+(Level/4)^1.25 Accelerators, +0.25% Accelerators per level. +1 Accelerator Boost every 20 levels!"
+            },
             effect(x) {
-                let eff = new Decimal(10)
+                let eff = {}
+                eff.eff1 = new Decimal(0)
+                eff.eff2 = new Decimal(0)
+                eff.eff3 = new Decimal(0)
+                eff.eff1 = eff.eff1.add(x.bought.div(4).pow(1.25))
+                eff.eff2 = eff.eff2.add(x.bought.times(0.25))
+                eff.eff3 = eff.eff3.add(x.bought.div(20).floor())
                 return eff
             },
             unlocked() { return player[this.layer].unlocked }, 
@@ -2483,7 +2554,7 @@ addLayer("o", {
                 player[this.layer].points = player[this.layer].points.sub(cost)	
                 player[this.layer].buyables[this.id].amount = player[this.layer].buyables[this.id].amount.add(1)
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
-                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
+                addBonusBuyables("c")
             },
             buyMax() {
                 let buyStart = player[this.layer].buyables[this.id].bought;
@@ -2546,16 +2617,18 @@ addLayer("o", {
                 +1 in " + format(data.cost) + " EXP"
                 
             },
+            tooltip() {
+                return "+(Level/10) Multipliers every 10th level, +0.25% Multipliers per level. Tax growth is delayed more for each level!"
+            },
             effect(x) {
-                let eff = new Decimal(10)
-                eff = eff.times(x.amount)
-                eff = eff.times(buyableEffect("c", 31).mult)
-                eff = eff.times(buyableEffect("c", 32).mult)
-                if (hasUpgrade("c", 11)) eff = eff.mul(upgradeEffect("c", 11))
-                //eff = eff.div(player.taxes)
+                let eff = {}
+                eff.eff1 = new Decimal(0)
+                eff.eff2 = new Decimal(0)
+                eff.eff1 = eff.eff1.add(x.bought.div(10))
+                eff.eff2 = eff.eff2.add(x.bought.times(0.25))
                 return eff
             },
-            unlocked() { return false }, 
+            unlocked() { return hasAchievement("a", 83) }, 
             canAfford() {
                 return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
             buy() { 
@@ -2563,7 +2636,7 @@ addLayer("o", {
                 player[this.layer].points = player[this.layer].points.sub(cost)	
                 player[this.layer].buyables[this.id].amount = player[this.layer].buyables[this.id].amount.add(1)
                 player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
-                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
+                addBonusBuyables("c")
             },
             buyMax() {
                 let buyStart = player[this.layer].buyables[this.id].bought;
