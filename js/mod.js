@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2.4",
-	name: "Runes",
+	num: "0.3",
+	name: "Transcend",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -36,7 +36,11 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Added Generator Upgrades.<br>
 	<h3>v0.2.4</h3><br>
 		- Added 2 Runes.<br>
-		- Added Diamond Upgrades.<br>`
+		- Added Diamond Upgrades.<br>
+	<h3>v0.3</h3><br>
+		- Added Transcend layer.<br>
+		- Added a row of Coin upgrades[WIP].<br>
+		- Fixed building cost scaling.<br>`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 

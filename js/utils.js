@@ -59,6 +59,182 @@ function getBuildingMults(layer, id) {
 	}
 }
 
+function getLastCost(layer, id) {
+	return player[layer]["b" + id + "cost"]
+}
+
+//Adapted from Synergism
+//I barely understand what this math is doing.
+const mantissaFactorialPartExtra = Math.log10(2 * Math.PI);
+const exponentFactorialPartExtra = Math.log10(Math.E);
+
+function factorialByExponent(fact) {
+    ++fact;
+    if (fact === 0) {
+        return 0;
+    }
+    return ((Math.log10(fact * Math.sqrt(fact * Math.sinh(1 / fact) + 1 / (810 * Math.pow(fact, 6)))) - exponentFactorialPartExtra) * fact) + ((mantissaFactorialPartExtra - Math.log10(fact)) / 2);
+}
+
+const fact100exponent = Math.log10(9.3326215443944152681699238856267e+157);
+
+const precision16_loss_addition_of_ones = 188.582;
+const known_log10s = function () {
+    // needed logs
+    let needed = [1.03, 1.25];
+    let nums = [1, 2, 3, 4, 5, 6, 10, 15];
+    for (let num of nums) {
+        needed.push(100 + (100 * num));
+        needed.push(10 + (10 * num));
+    }
+
+    // Gets all possible challenge 8 completion amounts
+    const chalcompletions = 1000;
+    for (let i = 0; i < chalcompletions; ++i) {
+        needed.push(1 + (i / 2));
+    }
+
+    // constructing all logs
+    let obj = {};
+    for (let need of needed) {
+        if (obj[need] === undefined) {
+            obj[need] = Math.log10(need);
+        }
+    }
+    return obj;
+}();
+
+//Adapted from Synergism
+function getCost(originalCost, buyingTo, layer, num, r = player.r) {
+
+
+    // It's 0 indexed by mistake so you have to subtract 1 somewhere.
+    --buyingTo;
+    // Accounts for the multiplies by 1.25^num buyingTo times
+    let cost = new Decimal(originalCost);
+    let mlog10125 = num * buyingTo;
+    // Accounts for the add 1s
+    if (buyingTo < precision16_loss_addition_of_ones / num) {
+        cost.mantissa += buyingTo / Math.pow(10, cost.exponent);
+    }
+    let fastFactMultBuyTo = 0;
+    // floored r value gets used a lot in removing calculations
+    let fr = Math.floor(r * 1000);
+    if (buyingTo >= r * 1000) {
+        // This code is such a mess at this point, just know that this is equivalent to what it was before
+        ++fastFactMultBuyTo;
+        cost.exponent -= factorialByExponent(fr);
+        cost.exponent += (-3 + Math.log10(1 + (num / 2))) * (buyingTo - fr);
+    }
+
+    fr = Math.floor(r * 5000);
+    if (buyingTo >= r * 5000) {
+        // This code is such a mess at this point, just know that this is equivalent to what it was before
+        ++fastFactMultBuyTo;
+        cost.exponent -= factorialByExponent(fr);
+        cost.exponent += ((known_log10s[10 + num * 10] + 1) * (buyingTo - fr - 1)) + 1;
+    }
+
+    fr = Math.floor(r * 20000);
+    if (buyingTo >= r * 20000) {
+        // This code is such a mess at this point, just know that this is equivalent to what it was before
+        fastFactMultBuyTo += 3;
+        cost.exponent -= factorialByExponent(fr) * 3;
+        cost.exponent += (known_log10s[100 + (100 * num)] + 5) * (buyingTo - fr);
+    }
+
+    fr = Math.floor(r * 250000);
+    if (buyingTo >= r * 250000) {
+        //1.03^x*1.03^y = 1.03^(x+y), we'll abuse this for this section of the algorithm
+        // 1.03^(x+y-((number of terms)250000*r))
+        // up to 250003 case
+        // assume r = 1 for this case
+        // (1.03^250000-250000)(1.03^250001-250000)(1.03^250002-250000)(1.03^250003) = (1.03^0*1.03^1*1.03^2*1.03^3)
+        // so in reality we just need to take buyingTo - fr and sum the power up to it
+        // (1.03^(sum from 0 to buyingTo - fr)) is the multiplier
+        // so (1.03^( (buyingTo-fr)(buyingTo-fr+1)/2 )
+        // god damn that was hard to make an algo for
+        cost.exponent += Math.log10(1.03) * (buyingTo - fr) * ((buyingTo - fr + 1) / 2);
+    }
+    // Applies the factorials from earlier without computing them 5 times
+    cost.exponent += factorialByExponent(buyingTo) * fastFactMultBuyTo;
+    let fastFactMultBuyTo100 = 0;
+    /*if ((player.currentChallenge.transcension === 4) && (type === "Coin" || type === "Diamonds")) {
+        // you would not fucking believe how long it took me to figure this out
+        // (100*costofcurrent + 10000)^n = (((100+buyingTo)!/100!)*100^buyingTo)^n
+        ++fastFactMultBuyTo100;
+        if (buyingTo >= (1000 - (10 * player.challengecompletions[4]))) {
+            // and I changed this to be a summation of all the previous buys 1.25 to the sum from 1 to buyingTo
+            mlog10125 += (buyingTo * (buyingTo + 1) / 2);
+        }
+    }*/
+    /*if ((player.currentChallenge.reincarnation === 10) && (type === "Coin" || type === "Diamonds")) {
+        // you would not fucking believe how long it took me to figure this out
+        // (100*costofcurrent + 10000)^n = (((100+buyingTo)!/100!)*100^buyingTo)^n
+        ++fastFactMultBuyTo100;
+        if (buyingTo >= (r * 25000)) {
+            // and I changed this to be a summation of all the previous buys 1.25 to the sum from 1 to buyingTo
+            mlog10125 += (buyingTo * (buyingTo + 1) / 2);
+        }
+    }*/
+    // Applies the factorial w/ formula from earlier n times to avoid multiple computations
+    cost.exponent += fastFactMultBuyTo100 * ((factorialByExponent(buyingTo + 100) - fact100exponent + (2 * buyingTo)) * (1.25 + (/*player.challengecompletions[4]*/0 / 4)));
+    // Applies all the Math.log10(1.25)s from earlier n times to avoid multiple computations
+    // log10(1.25)
+    cost.exponent += known_log10s[1.25] * mlog10125;
+    //fr = Math.floor(r * 1000 * player.challengecompletions[8]);
+    /*if (player.currentChallenge.reincarnation === 8 && (type === "Coin" || type === "Diamonds" || type === "Mythos") && buyingTo >= (1000 * player.challengecompletions[8] * r)) {
+        cost.exponent += ((known_log10s[2] * ((buyingTo - fr + 1) / 2)) - known_log10s[1 + (player.challengecompletions[8] / 2)]) * (buyingTo - fr);
+    }*/
+
+    extra = cost.exponent - Math.floor(cost.exponent);
+    cost.exponent = Math.floor(cost.exponent);
+    cost.mantissa *= Math.pow(10, extra);
+    cost.normalize();
+    return cost;
+}
+//Why is Synergism's buy system so entirely incompatible with TMT's....
+function buyProducer(layer, id, num) {
+    let ticker = 0
+	let buythisamount = 1;
+    let r = 1;
+    //r += (rune4level * effectiveLevelMult) / 160;
+    //r += (player.researches[56] + player.researches[57] + player.researches[58] + player.researches[59] + player.researches[60]) / 200;
+    //r += CalcECC('transcend', player.challengecompletions[4]) / 200
+    //r += (3 * (bonusant7 + player.antUpgrades[7])) / 100;
+
+    while (player[layer].points.gte(tmp[layer].buyables[id].cost) && ticker < buythisamount) {
+        player[layer].points = player[layer].points.sub(tmp[layer].buyables[id].cost);
+        player[layer].buyables[id].bought = player[layer].buyables[id].bought.add(1);
+		player[layer].buyables[id].amount = player[layer].buyables[id].amount.add(1);
+        player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(Decimal.pow(1.25, num));
+        player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].add(1);
+        if (player[layer].buyables[id].bought >= (1000 * r)) {
+            player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(player[layer].buyables[id].bought).dividedBy(1000).times(1 + num / 2);
+        }
+        if (player[layer].buyables[id].bought >= (5000 * r)) {
+            player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(player[layer].buyables[id].bought).times(10).times(10 + num * 10);
+        }
+        if (player[layer].buyables[id].bought >= (20000 * r)) {
+            player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(Decimal.pow(player[layer].buyables[id].bought, 3)).times(100000).times(100 + num * 100)
+        }
+        if (player[layer].buyables[id].bought >= (250000 * r)) {
+            player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(Decimal.pow(1.03, player[layer].buyables[id].bought - 250000 * r))
+        }
+        /*if (player.currentChallenge.transcension === 4 && (type === "Coin" || type === "Diamonds")) {
+            player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(Math.pow(100 * player[layer].buyables[id].bought + 10000, 1.25 + 1 / 4 * player.challengecompletions[4]));
+            if (player[layer].buyables[id].bought >= 1000 - (10 * player.challengecompletions[4])) {
+                player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(Decimal.pow(1.25, player[layer].buyables[id].bought));
+            }
+        }
+        if (player.currentChallenge.reincarnation === 8 && (type === "Coin" || type === "Diamonds" || type === "Mythos") && player[layer].buyables[id].bought >= (1000 * player.challengecompletions[8] * r)) {
+            player[layer]["b" + id + "cost"] = player[layer]["b" + id + "cost"].times(Decimal.pow(2, (player[layer].buyables[id].bought - (1000 * player.challengecompletions[8] * r)) / (1 + (player.challengecompletions[8] / 2))));
+        }*/
+        ticker += 1;
+    }
+    ticker = 0;
+}
+
 function calculatetaxes() {
 	let a = new Decimal(0);
     let c = 0;
@@ -95,6 +271,7 @@ function calculatetaxes() {
     exponent *= e;
 	exponent *= (0.001 + .999 * (Math.pow(6, -(player.o.buyables[12].amount.mag * 1) / 1000)))
 	exponent *= f;
+
 	maxexponent = Math.floor(275 / (Decimal.log(1.01, 10) * exponent)) - 1
     a = Math.min(maxexponent, Math.floor(Decimal.log(produceTotal.add(1), 10)));
 	if (a >= 1) {

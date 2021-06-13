@@ -264,9 +264,18 @@ function gainOfferings(i) {
     }
     if (i >= 2) {
         b += 2
+		b *= (1 + Math.pow(Decimal.log(player.t.mythosShards.add(1), 10), 1 / 2) / 5);
+		b *= Math.min(Math.pow(player.a.tTimes / 10, 2), 1)
+		if (player.a.tTimes >= 5) {
+            b *= Math.max(1, player.a.tTimes / 10)
+        }
     }
     if (i >= 1) {
         c += 1
+		if (player.a.tTimes > 0) {
+            c += 1
+        }
+		c *= (1 + Math.pow(Decimal.log(player.p.crystals.add(1), 10), 1 / 2) / 5);
         c *= Math.min(Math.pow(player.a.pTimes / 10, 2), 1)
         if (player.a.pTimes >= 5) {
             c *= Math.max(1, player.p.resetTime / 10)
@@ -300,8 +309,9 @@ function updateGenerators(layer, diff) {
 	if(hasUpgrade("g", 15)) player.c.buyables[22].amount = player.c.buyables[22].amount.add(player.c.buyables[11].bought)
 	for (id in layers[layer].buyables) {
 		if (layer === "p" && id == 11) addSubPoints(layer, "crystals", tmp.p.buyables[11].effect.times(diff))
-		if (layer === "p") {
-			let order = buyableOrder("p")
+		if (layer === "t" && id == 11) addSubPoints(layer, "mythosShards", tmp.t.buyables[11].effect.times(diff))
+		if (layer != "c") {
+			let order = buyableOrder(layer)
 			for (id = 1; id <= 4; id++) {
 				player[layer].buyables[order[id-1]].amount = player[layer].buyables[order[id-1]].amount.add(tmp[layer].buyables[order[id]].effect.times(diff))
 			}
