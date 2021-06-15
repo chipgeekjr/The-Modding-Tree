@@ -267,6 +267,9 @@ function exportSave() {
 	el.setSelectionRange(0, 99999);
 	document.execCommand("copy");
 	document.body.removeChild(el);
+	//calc quarks gain
+	player.qk.points=player.qk.points.add(layers.qk.getbaseqkgain().mul(layers.qk.gainMult()))
+	player.qk.time=player.qk.time.sub(layers.qk.delay().mul(layers.qk.getbaseqkgain()))
 }
 function importSave(imported = undefined, forced = false) {
 	if (imported === undefined)

@@ -542,6 +542,9 @@ function gameLoop(diff) {
 		if (layers[layer].achievements) updateAchievements(layer)
 	}
 
+//quark time calc
+player.qk.time=player.qk.time.add(diff)
+
 }
 
 function hardReset() {
