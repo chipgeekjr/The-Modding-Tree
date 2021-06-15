@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3",
-	name: "Transcend",
+	num: "0.3.1",
+	name: "Bug Fix",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -40,7 +40,9 @@ let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.3</h3><br>
 		- Added Transcend layer.<br>
 		- Added a row of Coin upgrades[WIP].<br>
-		- Fixed building cost scaling.<br>`
+		- Fixed building cost scaling.<br>
+	<h3>v0.3.1</h3><br>
+		- Fixed building costs not resetting on second prestige/boost.<br>`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 

@@ -1554,7 +1554,12 @@ addLayer("c", {
                     layers.c.startData = function() { 
                         return {
                             unlocked: true,
-                            points: new Decimal(200)
+                            points: new Decimal(200),
+                            b11cost: new Decimal(100),
+                            b12cost: new Decimal(2000),
+                            b13cost: new Decimal(4e4),
+                            b21cost: new Decimal(8e5),
+                            b22cost: new Decimal(16e6),
                         }
                     }
                 }
@@ -1757,7 +1762,12 @@ addLayer("p", {
             layers.c.startData = function() { 
                 return {
                     unlocked: true,
-                    points: new Decimal(200)
+		            points: new Decimal(200),
+                    b11cost: new Decimal(100),
+                    b12cost: new Decimal(2000),
+                    b13cost: new Decimal(4e4),
+                    b21cost: new Decimal(8e5),
+                    b22cost: new Decimal(16e6),
                 }
             }
         }
