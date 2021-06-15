@@ -25,6 +25,8 @@ function canBuyBuyable(layer, id) {
 function getCoinMult() {
 	let coinMult = new Decimal(tmp.c.buyables[31].effect.mult).mul(tmp.c.buyables[32].effect.mult)
 	if (player.p.crystals.gte(0)) coinMult = coinMult.times(tmp.p.effect)
+	if (hasUpgrade("c", 21)) coinMult = coinMult.times(upgradeEffect("c", 21))
+	if (hasUpgrade("c", 32)) coinMult = coinMult.times(upgradeEffect("c", 32))
 	return coinMult
 }
 
@@ -40,6 +42,7 @@ function getBuildingMults(layer, id) {
 				}
 				case 12: {
 					if (hasUpgrade("c", 12)) mult = mult.times(upgradeEffect("c", 12))
+					if (hasUpgrade("c", 33)) mult = mult.times(upgradeEffect("c", 33))
 					return mult;
 				}
 				case 13: {

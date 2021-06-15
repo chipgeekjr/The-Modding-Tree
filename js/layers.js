@@ -866,12 +866,10 @@ addLayer("c", {
             unlocked() { return hasUpgrade("g", 11) || player.a.tTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
-                let total = new Decimal(0)
-                total = player[this.layer].buyables[11].bought.add(player[this.layer].buyables[12].bought.add(player[this.layer].buyables[13].bought.add(player[this.layer].buyables[21].bought.add(player[this.layer].buyables[22].bought))))
-                eff = eff.times(total.add(1)).times(Decimal.min(1e30, Decimal.pow(1.008, total)))
+                eff = Decimal.pow(1.02, player.c.buyables[31].amount)
                 return eff;
             },
-            effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            effectDisplay() { return "Generator efficiency x"+ format(this.effect()) }, // Add formatting to the effect
         },
         32: {
             title: "XII",
@@ -879,12 +877,12 @@ addLayer("c", {
             cost: new Decimal(1e75),
             unlocked() { return hasUpgrade("g", 11) || player.a.tTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
-                let eff = new Decimal(0)
-                eff = eff.add(Decimal.min(4, Decimal.floor(Decimal.log(player.c.buyables[22].bought.add(1), 10)).add(1)))
+                let eff = new Decimal(1)
+                eff = eff.times(Decimal.min(1e4, Decimal.pow(1.01, player.a.pTimes)))
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            effectDisplay() { return "Gain " + format(this.effect())+" free multipliers from bought Alchemies." }, // Add formatting to the effect
+            effectDisplay() { return "All Coin production x" + format(this.effect()) }, // Add formatting to the effect
         },
         33: {
             title: "XIII",
@@ -892,37 +890,37 @@ addLayer("c", {
             cost: new Decimal(1e110),
             unlocked() { return hasUpgrade("g", 11) || player.a.tTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
-                let eff = new Decimal(0)
-                eff = eff.add(Decimal.floor(player.c.buyables[32].bought.div(7)));
+                let eff = new Decimal(1)
+                eff = eff.times(Decimal.min(1e50, Decimal.pow(player.t.buyables[11].amount.add(1), 4 / 3).times(1e10)));
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            effectDisplay() { return "+" + format(this.effect())+" free Accelerators." }, // Add formatting to the effect
+            effectDisplay() { return "Investment Production x" + format(this.effect()) }, // Add formatting to the effect
         },
         34: {
-            title: "XIX",
+            title: "XIV",
             description: "Free Accelerators buff generation of Printers.",
             cost: new Decimal(1e150),
             unlocked() { return hasUpgrade("g", 11) || player.a.tTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
-                let eff = new Decimal(0)
-                eff = eff.add(Decimal.floor(player.c.buyables[31].bought.div(10)));
+                let eff = new Decimal(1)
+                eff = Decimal.pow(1.15, freeA)
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            effectDisplay() { return "+" + format(this.effect())+" free Multipliers." }, // Add formatting to the effect
+            effectDisplay() { return "Printer Generation x" + format(this.effect()) }, // Add formatting to the effect
         },
         35: {
-            title: "XX",
+            title: "XV",
             description: "Free Accelerators buff generation of Mints.",
             cost: new Decimal(1e200),
             unlocked() { return hasUpgrade("g", 11) || player.a.tTimes > 0},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
-                eff = eff.times(Decimal.pow(2, Decimal.min(50, player.c.buyables[12].bought.div(15))));
+                eff = Decimal.pow(1.15, freeA)
                 return eff;
             },
-            effectDisplay() { return "Worker Production x" + format(this.effect()) }, // Add formatting to the effect
+            effectDisplay() { return "Mint Generation x" + format(this.effect()) }, // Add formatting to the effect
         },
     },
     buyables: {
@@ -1563,8 +1561,8 @@ addLayer("c", {
                         }
                     }
                 }
-                layerDataReset("p", ["buyables"])
-                layerDataReset("c", ["auto"])
+                layerDataReset("p", ["buyables", "b11cost", "b12cost", "b13ost", "b21cost", "b22cost"])
+                layerDataReset("c")
                 
                 
             },
@@ -1801,7 +1799,7 @@ addLayer("p", {
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            effectDisplay() { return "+" + format(Decimal.floor((1 + (1 / 101 * freeM)))) + " Multipliers, +" + format(Decimal.floor((5 + (1 / 101 * freeA)))) + " Accelerators." }, // Add formatting to the effect
         },
         12: {
             title: "II",
@@ -1813,7 +1811,7 @@ addLayer("p", {
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            effectDisplay() { return "+" + format(Decimal.floor((1 + (1 / 101 * freeM)))) + " Multipliers, +" + format(Decimal.floor((4 + (1 / 101 * freeA)))) + " Accelerators." }, // Add formatting to the effect
         },
         13: {
             title: "III",
@@ -1825,7 +1823,7 @@ addLayer("p", {
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            effectDisplay() { return "+" + format(Decimal.floor((1 + (1 / 101 * freeM)))) + " Multipliers, +" + format(Decimal.floor((3 + (1 / 101 * freeA)))) + " Accelerators." }, // Add formatting to the effect
         },
         14: {
             title: "IV",
@@ -1837,7 +1835,7 @@ addLayer("p", {
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            effectDisplay() { return "+" + format(Decimal.floor((1 + (1 / 101 * freeM)))) + " Multipliers, +" + format(Decimal.floor((2 + (1 / 101 * freeA)))) + " Accelerators." }, // Add formatting to the effect
         },
         15: {
             title: "V",
@@ -1849,7 +1847,7 @@ addLayer("p", {
                 return eff;
             },
             onPurchase() { addBonusBuyables("c") },
-            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            effectDisplay() { return "+" + format(Decimal.floor((1 + (1 / 101 * freeM)))) + " Multipliers, +" + format(Decimal.floor((1 + (1 / 101 * freeA)))) + " Accelerators." }, // Add formatting to the effect
         },
         21: {
             title: "VI",
@@ -1914,6 +1912,68 @@ addLayer("p", {
             },
             onPurchase() { addBonusBuyables("c") },
             effectDisplay() { return "+" + format(this.effect())+" Multipliers." }, // Add formatting to the effect
+        },
+        31: {
+            title: "XI",
+            description: "Gain 1 free Accelerator Boost per 2,000 Coin producers bought.",
+            cost: new Decimal(1e150),
+            unlocked() { return player.a.tTimes > 0},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                total = player.c.buyables[11].bought.add(player.c.buyables[12].bought.add(player.c.buyables[13].bought.add(player.c.buyables[21].bought.add(player.c.buyables[22].bought))))
+                eff = Decimal.floor(total / 2000) * 100 / 100
+                return eff;
+            },
+            effectDisplay() { return "+"+ format(this.effect(), 0) + " Accelerator Boosts" }, // Add formatting to the effect
+        },
+        32: {
+            title: "XII",
+            description: "Gain free Accelerators based on Unspent Diamonds.",
+            cost: new Decimal("1e400"),
+            unlocked() { return player.a.tTimes > 0},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                eff = Decimal.min(500, Decimal.floor(Decimal.log(player.p.points.add(1), 1e25)));
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "+"+ format(this.effect(), 0) + " Accelerators" }, // Add formatting to the effect
+        },
+        33: {
+            title: "XIII",
+            description: "Gain 1 free Multiplier for each Accelerator Boost owned.",
+            cost: new Decimal("1e800"),
+            unlocked() { return player.a.tTimes > 0},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(1)
+                eff = player.p.buyables[33].amount
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "+"+ format(this.effect()) + " Multipliers" }, // Add formatting to the effect
+        },
+        34: {
+            title: "XIV",
+            description: "Gain 3% more free Multipliers.",
+            cost: new Decimal("1e1600"),
+            unlocked() { return player.a.tTimes > 0},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0.03)
+                return eff;
+            },
+            onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "+" + format(Decimal.floor(3 / 103 * freeM)) + " Multipliers" }, // Add formatting to the effect
+        },
+        35: {
+            title: "XV",
+            description: "Gain 2% more free Multipliers.",
+            cost: new Decimal("1e3200"),
+            unlocked() { return player.a.tTimes > 0},
+            effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
+                let eff = new Decimal(0.02)
+                return eff;
+            },
+            effectDisplay() { return "+" + format(Decimal.floor(2 / 102 * freeM)) + " Multipliers" }, // Add formatting to the effect
         },
     },
     buyables: {
@@ -2521,15 +2581,6 @@ addLayer("t", {
         addPoints("o", gainOfferings(2))
         player.a.tTimes += 1
         if (tmp[this.layer].getResetGain.gt(player[this.layer].bestPointGain)) player[this.layer].bestPointGain = tmp[this.layer].getResetGain
-        //This is bad, but for now it works.
-        if (hasAchievement("a", 81)) {
-            layers.c.startData = function() { 
-                return {
-                    unlocked: true,
-                    points: new Decimal(200)
-                }
-            }
-        }
     },
     effect() {
         let eff = Decimal.log(player.t.mythosShards.add(1), 3);
@@ -2555,22 +2606,22 @@ addLayer("t", {
             content: ["main-display", "challenges"]
         },
     },
-   /* upgrades: {
+    /*upgrades: {
         11: {
             title: "I",
-            description: "Gain 1 Multiplier and 5 Accelerators plus 1% more free Multipliers and Accelerators.",
-            cost: new Decimal(100),
+            description: "Multiply production based on unspent Mythos.",
+            cost: new Decimal(10),
             unlocked() { return true},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values
                 let eff = new Decimal(1)
                 return eff;
             },
-            onPurchase() { addBonusBuyables("c") },
-            //effectDisplay() { return format(this.effect())+"x" }, // Add formatting to the effect
+            //onPurchase() { addBonusBuyables("c") },
+            effectDisplay() { return "Coin production is multiplied by " + format(this.effect()) }, // Add formatting to the effect
         },
         12: {
             title: "II",
-            description: "Gain 1 Multiplier and 4 Accelerators plus 1% more free Multipliers and Accelerators.",
+            description: "Multiply Mythos Shard production based on unspent Diamonds.",
             cost: new Decimal(1000),
             unlocked() { return true},
             effect() { // Calculate bonuses from the upgrade. Can return a single value or an object with multiple values

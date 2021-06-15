@@ -205,7 +205,9 @@ function addBonusBuyables(layer) {
 			if(hasUpgrade("p", 15)) totalA = totalA.add(1)
 			if(hasUpgrade("p", 22)) totalA = totalA.add(tmp.p.upgrades[22].effect)
 			if(hasUpgrade("p", 24)) totalA = totalA.add(tmp.p.upgrades[24].effect)
+			if(hasUpgrade("p", 32)) totalA = totalA.add(upgradeEffect("p", 32))
 			totalA = totalA.times(getPercentAccelerator())
+			freeA = totalA
 			player.c.buyables[31].amount = totalA.add(player.c.buyables[31].bought).floor()
 
 			if (hasUpgrade("c", 22)) totalM = totalM.add(tmp.c.upgrades[22].effect)
@@ -218,11 +220,15 @@ function addBonusBuyables(layer) {
 			if(hasUpgrade("p", 15)) totalM = totalM.add(1)
 			if(hasUpgrade("p", 23)) totalM = totalM.add(tmp.p.upgrades[23].effect)
 			if(hasUpgrade("p", 25)) totalM = totalM.add(tmp.p.upgrades[25].effect)
+			if(hasUpgrade("p", 33)) totalM = totalM.add(upgradeEffect("p", 33))
 			totalM = totalM.times(getPercentMultiplier())
+			freeM = totalM
 			player.c.buyables[32].amount = totalM.add(player.c.buyables[32].bought).floor()
 
 			totalAB = totalAB.add(tmp.o.buyables[11].effect.eff3)
 			if(hasUpgrade("p", 21)) totalAB = totalAB.add(1)
+			if(hasUpgrade("p", 31)) totalAB = totalAB.add(upgradeEffect("p", 31))
+			freeAB = totalAB
 			player.p.buyables[33].amount = totalAB.add(player.p.buyables[33].bought)
 			
 			break;
@@ -250,6 +256,8 @@ function getPercentMultiplier() {
 	if(hasUpgrade("p", 13)) percent = percent.add(0.01)
 	if(hasUpgrade("p", 14)) percent = percent.add(0.01)
 	if(hasUpgrade("p", 15)) percent = percent.add(0.01)
+	if(hasUpgrade("p", 34)) percent = percent.add(0.03)
+	if(hasUpgrade("p", 35)) percent = percent.add(0.02)
 	return percent
 }
 
@@ -302,11 +310,11 @@ function buyableOrder(layer) {
 function updateGenerators(layer, diff) {
 	taxes = new Decimal.min(produceTotal.dividedBy(player.taxes), Decimal.pow(10, maxexponent - Decimal.log(player.taxcheck, 10)))
 	if (layer === "c") addPoints(layer, taxes.times(diff / 0.025))
-	if(hasUpgrade("g", 11)) player.c.buyables[21].amount = player.c.buyables[21].amount.add(player.c.buyables[22].amount)
-	if(hasUpgrade("g", 12)) player.c.buyables[13].amount = player.c.buyables[13].amount.add(player.c.buyables[21].amount)
-	if(hasUpgrade("g", 13)) player.c.buyables[12].amount = player.c.buyables[12].amount.add(player.c.buyables[13].amount)
-	if(hasUpgrade("g", 14)) player.c.buyables[11].amount = player.c.buyables[11].amount.add(player.c.buyables[12].amount)
-	if(hasUpgrade("g", 15)) player.c.buyables[22].amount = player.c.buyables[22].amount.add(player.c.buyables[11].bought)
+	if(hasUpgrade("g", 11)) player.c.buyables[21].amount = player.c.buyables[21].amount.add(player.c.buyables[22].amount.times(hasUpgrade("c", 31) ? upgradeEffect("c", 31) : 1).times(hasUpgrade("c", 35) ? upgradeEffect("c", 35) : 1))
+	if(hasUpgrade("g", 12)) player.c.buyables[13].amount = player.c.buyables[13].amount.add(player.c.buyables[21].amount.times(hasUpgrade("c", 31) ? upgradeEffect("c", 31) : 1).times(hasUpgrade("c", 34) ? upgradeEffect("c", 34) : 1))
+	if(hasUpgrade("g", 13)) player.c.buyables[12].amount = player.c.buyables[12].amount.add(player.c.buyables[13].amount.times(hasUpgrade("c", 31) ? upgradeEffect("c", 31) : 1))
+	if(hasUpgrade("g", 14)) player.c.buyables[11].amount = player.c.buyables[11].amount.add(player.c.buyables[12].amount.times(hasUpgrade("c", 31) ? upgradeEffect("c", 31) : 1))
+	if(hasUpgrade("g", 15)) player.c.buyables[22].amount = player.c.buyables[22].amount.add(player.c.buyables[11].bought.times(hasUpgrade("c", 31) ? upgradeEffect("c", 31) : 1))
 	for (id in layers[layer].buyables) {
 		if (layer === "p" && id == 11) addSubPoints(layer, "crystals", tmp.p.buyables[11].effect.times(diff))
 		if (layer === "t" && id == 11) addSubPoints(layer, "mythosShards", tmp.t.buyables[11].effect.times(diff))
@@ -495,6 +503,7 @@ function gameLoop(diff) {
 			let layer = TREE_LAYERS[x][item]
 			player[layer].resetTime += diff
 			updateGenerators(layer, diff)
+			addBonusBuyables(layer)
 			if (tmp[layer].passiveGeneration) generatePoints(layer, diff*tmp[layer].passiveGeneration);
 			if (layers[layer].update) layers[layer].update(diff);
 		}
