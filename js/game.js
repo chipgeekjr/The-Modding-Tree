@@ -543,7 +543,7 @@ function gameLoop(diff) {
 	}
 
 //quark time calc
-player.qk.time=player.qk.time.add(diff)
+if(!layers.qk.gettotalqk().eq(layers.qk.cap())) player.qk.time=player.qk.time.add(diff)
 
 }
 

@@ -28,6 +28,9 @@ addLayer("qk", {
     getbaseqkgain(){
         return player.qk.time.div(layers.qk.delay()).floor()
     },
+    gettotalqk(){
+        return layers.qk.getbaseqkgain().mul(layers.qk.gainMult()).min(layers.qk.cap())
+    },
 
     //these is useful
     //qk gain delay
@@ -37,12 +40,24 @@ addLayer("qk", {
         mult = new Decimal(1)
        return mult.floor()
     },
+    //cap quarks when export
+    cap(){
+        return new Decimal(10)
+    },
 
 
     tabFormat: {
         QuarkShop:{
         content: ["main-display", 
-        ["display-text", function() {return `If you export now,you'll get ${format(layers.qk.getbaseqkgain().mul(layers.qk.gainMult()))} quarks.(next ${format(layers.qk.gainMult())} in ${format(layers.qk.delay().sub(player.qk.time.sub(player.qk.time.div(layers.qk.delay()).floor().mul(layers.qk.delay()))))} seconds)`}],
+        ["display-text", function() {return `If you export now,you'll get ${format(layers.qk.gettotalqk())} quarks.(next ${format(layers.qk.gainMult())} in ${format(layers.qk.delay().sub(player.qk.time.sub(player.qk.time.div(layers.qk.delay()).floor().mul(layers.qk.delay()))))} seconds,capped at ${format(layers.qk.cap())})`}],
         ]
-    },}
+    }}
+
+
 })
+
+function calcQK(){
+    	//calc quarks gain
+	player.qk.points=player.qk.points.add(layers.qk.gettotalqk())
+	player.qk.time=player.qk.time.sub(layers.qk.delay().mul(layers.qk.getbaseqkgain()))
+}
