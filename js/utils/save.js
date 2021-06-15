@@ -267,6 +267,8 @@ function exportSave() {
 	el.setSelectionRange(0, 99999);
 	document.execCommand("copy");
 	document.body.removeChild(el);
+
+	calcQK()
 }
 function importSave(imported = undefined, forced = false) {
 	if (imported === undefined)
