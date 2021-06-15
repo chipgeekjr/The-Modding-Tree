@@ -686,6 +686,8 @@ addLayer("c", {
         b13cost: new Decimal(4e4),
         b21cost: new Decimal(8e5),
         b22cost: new Decimal(16e6),
+        costA: new Decimal(500),
+        costM: new Decimal(1e5),
         
     }},
     color: "#ffd700",
@@ -1364,9 +1366,7 @@ addLayer("c", {
             amount: new Decimal(0),
             bought: new Decimal(0), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(500)
-                cost = cost.times(Decimal.pow(4, x.bought))
-                return cost.ceil()
+                return player.c.costA
             },
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
@@ -1394,47 +1394,10 @@ addLayer("c", {
             canAfford() {
                 return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
             buy() { 
-                cost = tmp[this.layer].buyables[this.id].cost
-                player[this.layer].points = player[this.layer].points.sub(cost)	
-                player[this.layer].buyables[this.id].amount = player[this.layer].buyables[this.id].amount.add(1)
-                player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
-                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
+                buyAccelerator()
             },
             buyMax() {
-                let buyStart = player[this.layer].buyables[this.id].bought;
-                let buyInc = 1;
-                let x = {}
-                x.bought = buyStart.add(buyInc)
-                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
-                while (player.c.points.gte(cashToBuy)) {
-                    // then multiply by 4 until it reaches just above the amount needed
-                    buyInc = buyInc * 4;
-                    x.bought = buyStart.add(buyInc)
-                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
-                }
-                let stepdown = Math.floor(buyInc / 8);
-                while (stepdown !== 0) {
-                    // if step down would push it below out of expense range then divide step down by 2
-                    x.bought = buyStart.add(buyInc - stepdown)
-                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
-                        stepdown = Math.floor(stepdown / 2);
-                    } else {
-                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
-                    }
-                }
-                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
-                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
-                x.bought = buyFrom
-                let thisCost = layers[this.layer].buyables[this.id].cost(x);
-                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
-                    x.bought = buyFrom
-                    player[this.layer].points = player[this.layer].points.sub(thisCost);
-                    player[this.layer].buyables[this.id].amount = buyFrom
-                    player[this.layer].buyables[this.id].bought = buyFrom
-                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
-                    thisCost = layers[this.layer].buyables[this.id].cost(x);
-                    addBonusBuyables("c")
-                }
+                buyAccelerator(true)
             }, // You'll have to handle this yourself if you want
             style() {
                 if(tmp[this.layer].buyables[this.id].canAfford)return {'height':'222px', 'background-color':'cyan'}
@@ -1447,9 +1410,7 @@ addLayer("c", {
             amount: new Decimal(0),
             bought: new Decimal(0), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
-                let cost = new Decimal(1e5)
-                cost = cost.times(Decimal.pow(10, x.bought))
-                return cost.ceil()
+                return player.c.costM
             },
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
@@ -1472,48 +1433,11 @@ addLayer("c", {
             canAfford() {
                 return player[this.layer].points.gte(tmp[this.layer].buyables[this.id].cost)},
             buy() { 
-                cost = tmp[this.layer].buyables[this.id].cost
-                player[this.layer].points = player[this.layer].points.sub(cost)	
-                player[this.layer].buyables[this.id].amount = player[this.layer].buyables[this.id].amount.add(1)
-                player[this.layer].buyables[this.id].bought = player[this.layer].buyables[this.id].bought.add(1)
-                player[this.layer].spentOnBuyables = player[this.layer].spentOnBuyables.add(cost) // This is a built-in system that you can use for respeccing but it only works with a single Decimal value
+                buyMultiplier()
             },
             buyMax() {
-                let buyStart = player[this.layer].buyables[this.id].bought;
-                let buyInc = 1;
-                let x = {}
-                x.bought = buyStart.add(buyInc)
-                let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
-                while (player.c.points.gte(cashToBuy)) {
-                    // then multiply by 4 until it reaches just above the amount needed
-                    buyInc = buyInc * 4;
-                    x.bought = buyStart.add(buyInc)
-                    cashToBuy = layers[this.layer].buyables[this.id].cost(x)
-                }
-                let stepdown = Math.floor(buyInc / 8);
-                while (stepdown !== 0) {
-                    // if step down would push it below out of expense range then divide step down by 2
-                    x.bought = buyStart.add(buyInc - stepdown)
-                    if (layers[this.layer].buyables[this.id].cost(x).lte(player[this.layer].points)) {
-                        stepdown = Math.floor(stepdown / 2);
-                    } else {
-                        buyInc = buyInc - Math.max(smallestInc(buyInc), stepdown);
-                    }
-                }
-                // go down by 7 steps below the last one able to be bought and spend the cost of 25 up to the one that you started with and stop if coin goes below requirement
-                let buyFrom = Decimal.max(buyStart.add(buyInc).sub(7), player[this.layer].buyables[this.id].bought.add(1));
-                x.bought = buyFrom
-                let thisCost = layers[this.layer].buyables[this.id].cost(x);
-                while (buyFrom.lt((buyStart.add(buyInc))) && player[this.layer].points.gte(thisCost)) {
-                    x.bought = buyFrom
-                    player[this.layer].points = player[this.layer].points.sub(thisCost);
-                    player[this.layer].buyables[this.id].amount = buyFrom
-                    player[this.layer].buyables[this.id].bought = buyFrom
-                    buyFrom = buyFrom.add(smallestIncDecimal(buyFrom));
-                    thisCost = layers[this.layer].buyables[this.id].cost(x);
-                    addBonusBuyables("c")
-                }
-            }, // You'll have to handle this yourself if you want
+                buyMultiplier(true)
+            }, 
             style() {
                 if(tmp[this.layer].buyables[this.id].canAfford)return {'height':'222px', 'background-color':'#ff294e'}
                 return {'height':'222px'}
@@ -1548,20 +1472,7 @@ addLayer("c", {
             buy() { 
                 player.p.buyables[33].amount = player.p.buyables[33].amount.add(1)
                 player.p.buyables[33].bought = player.p.buyables[33].bought.add(1)
-                if (hasAchievement("a", 81)) {
-                    layers.c.startData = function() { 
-                        return {
-                            unlocked: true,
-                            points: new Decimal(200),
-                            b11cost: new Decimal(100),
-                            b12cost: new Decimal(2000),
-                            b13cost: new Decimal(4e4),
-                            b21cost: new Decimal(8e5),
-                            b22cost: new Decimal(16e6),
-                        }
-                    }
-                }
-                layerDataReset("p", ["buyables", "b11cost", "b12cost", "b13ost", "b21cost", "b22cost"])
+                layerDataReset("p", ["buyables", "b11cost", "b12cost", "b13cost", "b21cost", "b22cost"])
                 layerDataReset("c")
                 
                 
@@ -1766,6 +1677,8 @@ addLayer("p", {
                     b13cost: new Decimal(4e4),
                     b21cost: new Decimal(8e5),
                     b22cost: new Decimal(16e6),
+                    costA: new Decimal(500),
+                    costM: new Decimal(1e5),
                 }
             }
         }
@@ -2015,7 +1928,7 @@ addLayer("p", {
                     //let x = {}
                     //x.bought = buyStart.add(buyInc)
                     let cashToBuy = getCost(100, buyStart.add(buyInc), this.layer, 1, player.r)
-                    while (player.c.points.gte(cashToBuy)) {
+                    while (player[this.layer].points.gte(cashToBuy)) {
                         // then multiply by 4 until it reaches just above the amount needed
                         buyInc = buyInc * 4;
                         //x.bought = buyStart.add(buyInc)
@@ -2087,7 +2000,7 @@ addLayer("p", {
                     //let x = {}
                     //x.bought = buyStart.add(buyInc)
                     let cashToBuy = getCost(1e5, buyStart.add(buyInc), this.layer, 3, player.r)
-                    while (player.c.points.gte(cashToBuy)) {
+                    while (player[this.layer].points.gte(cashToBuy)) {
                         // then multiply by 4 until it reaches just above the amount needed
                         buyInc = buyInc * 4;
                         //x.bought = buyStart.add(buyInc)
@@ -2159,7 +2072,7 @@ addLayer("p", {
                     //let x = {}
                     //x.bought = buyStart.add(buyInc)
                     let cashToBuy = getCost(1e15, buyStart.add(buyInc), this.layer, 6, player.r)
-                    while (player.c.points.gte(cashToBuy)) {
+                    while (player[this.layer].points.gte(cashToBuy)) {
                         // then multiply by 4 until it reaches just above the amount needed
                         buyInc = buyInc * 4;
                         //x.bought = buyStart.add(buyInc)
@@ -2231,7 +2144,7 @@ addLayer("p", {
                     //let x = {}
                     //x.bought = buyStart.add(buyInc)
                     let cashToBuy = getCost(1e40, buyStart.add(buyInc), this.layer, 10, player.r)
-                    while (player.c.points.gte(cashToBuy)) {
+                    while (player[this.layer].points.gte(cashToBuy)) {
                         // then multiply by 4 until it reaches just above the amount needed
                         buyInc = buyInc * 4;
                         //x.bought = buyStart.add(buyInc)
@@ -2303,7 +2216,7 @@ addLayer("p", {
                     //let x = {}
                     //x.bought = buyStart.add(buyInc)
                     let cashToBuy = getCost(1e100, buyStart.add(buyInc), this.layer, 15, player.r)
-                    while (player.c.points.gte(cashToBuy)) {
+                    while (player[this.layer].points.gte(cashToBuy)) {
                         // then multiply by 4 until it reaches just above the amount needed
                         buyInc = buyInc * 4;
                         //x.bought = buyStart.add(buyInc)
@@ -2343,7 +2256,7 @@ addLayer("p", {
             bought: new Decimal(0),
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
                 let cost = new Decimal(1e6)
-                cost = cost.times(Decimal.pow(1e8, x.bought))
+                cost = Decimal.pow(10, (6 + 8 * Math.floor(Math.pow(player[this.layer].buyables[this.id].bought.add(0.5), 2) / 2)))
                 return cost.ceil()
             },
             display() { // Everything else displayed in the buyable button after the title
@@ -2373,7 +2286,7 @@ addLayer("p", {
                 let x = {}
                 x.bought = buyStart.add(buyInc)
                 let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
-                while (player.c.points.gte(cashToBuy)) {
+                while (player[this.layer].points.gte(cashToBuy)) {
                     // then multiply by 4 until it reaches just above the amount needed
                     buyInc = buyInc * 4;
                     x.bought = buyStart.add(buyInc)
@@ -2413,7 +2326,7 @@ addLayer("p", {
             bought: new Decimal(0), 
             cost(x) { // cost for buying xth buyable, can be an object if there are multiple currencies
                 let cost = new Decimal(1e15)
-                cost = cost.times(Decimal.pow(1e15, x.bought))
+                cost = Decimal.pow(10, (15 + 15 * Math.floor(Math.pow(player[this.layer].buyables[this.id].bought.add(0.5), 2) / 2)))
                 return cost.ceil()
             },
             display() { // Everything else displayed in the buyable button after the title
@@ -2443,7 +2356,7 @@ addLayer("p", {
                 let x = {}
                 x.bought = buyStart.add(buyInc)
                 let cashToBuy = layers[this.layer].buyables[this.id].cost(x)
-                while (player.c.points.gte(cashToBuy)) {
+                while (player[this.layer].points.gte(cashToBuy)) {
                     // then multiply by 4 until it reaches just above the amount needed
                     buyInc = buyInc * 4;
                     x.bought = buyStart.add(buyInc)
@@ -2787,7 +2700,7 @@ addLayer("t", {
                 //let x = {}
                 //x.bought = buyStart.add(buyInc)
                 let cashToBuy = getCost(1, buyStart.add(buyInc), this.layer, 1, player.r)
-                while (player.c.points.gte(cashToBuy)) {
+                while (player[this.layer].points.gte(cashToBuy)) {
                     // then multiply by 4 until it reaches just above the amount needed
                     buyInc = buyInc * 4;
                     //x.bought = buyStart.add(buyInc)
@@ -2873,7 +2786,7 @@ addLayer("t", {
                 //let x = {}
                 //x.bought = buyStart.add(buyInc)
                 let cashToBuy = getCost(100, buyStart.add(buyInc), this.layer, 3, player.r)
-                while (player.c.points.gte(cashToBuy)) {
+                while (player[this.layer].points.gte(cashToBuy)) {
                     // then multiply by 4 until it reaches just above the amount needed
                     buyInc = buyInc * 4;
                     //x.bought = buyStart.add(buyInc)
@@ -2959,7 +2872,7 @@ addLayer("t", {
                 //let x = {}
                 //x.bought = buyStart.add(buyInc)
                 let cashToBuy = getCost(1e4, buyStart.add(buyInc), this.layer, 6, player.r)
-                while (player.c.points.gte(cashToBuy)) {
+                while (player[this.layer].points.gte(cashToBuy)) {
                     // then multiply by 4 until it reaches just above the amount needed
                     buyInc = buyInc * 4;
                     //x.bought = buyStart.add(buyInc)
@@ -3045,7 +2958,7 @@ addLayer("t", {
                 //let x = {}
                 //x.bought = buyStart.add(buyInc)
                 let cashToBuy = getCost(1e8, buyStart.add(buyInc), this.layer, 10, player.r)
-                while (player.c.points.gte(cashToBuy)) {
+                while (player[this.layer].points.gte(cashToBuy)) {
                     // then multiply by 4 until it reaches just above the amount needed
                     buyInc = buyInc * 4;
                     //x.bought = buyStart.add(buyInc)
@@ -3131,7 +3044,7 @@ addLayer("t", {
                 //let x = {}
                 //x.bought = buyStart.add(buyInc)
                 let cashToBuy = getCost(1e16, buyStart.add(buyInc), this.layer, 15, player.r)
-                while (player.c.points.gte(cashToBuy)) {
+                while (player[this.layer].points.gte(cashToBuy)) {
                     // then multiply by 4 until it reaches just above the amount needed
                     buyInc = buyInc * 4;
                     //x.bought = buyStart.add(buyInc)

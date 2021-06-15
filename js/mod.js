@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.2",
-	name: "More Upgrades",
+	num: "0.3.3",
+	name: "Deflate",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -47,7 +47,9 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Fixed Coin upgrade VI not aplying it's effect.<br>
 		- Fixed Diamond building costs resetting on Boost.<br>
 		- Added effects to Coin upgrades XI-XV.<br>
-		- Added a row of Prestige upgrades.<br>`
+		- Added a row of Prestige upgrades.<br>
+	<h3>v0.3.3</h3><br>
+		- Fixed Crystal buyable and Accelerator/Multipler cost scaling.<br>`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 

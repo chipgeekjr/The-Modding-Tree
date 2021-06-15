@@ -107,6 +107,130 @@ const known_log10s = function () {
     return obj;
 }();
 
+function getCostAccelerator(buyingTo) {
+    --buyingTo;
+
+    let originalCost = 500;
+    let cost = new Decimal(originalCost);
+
+    cost = cost.times(Decimal.pow(4 / 1, buyingTo));
+
+    if (buyingTo > 125) {
+        let num = buyingTo - 125;
+        let factorialBit = new Decimal(num).factorial();
+        let multBit = Decimal.pow(4, num);
+        cost = cost.times(multBit.times(factorialBit));
+    }
+
+    if (buyingTo > 2000) {
+        let sumNum = buyingTo - 2000;
+        let sumBit = sumNum * (sumNum + 1) / 2
+        cost = cost.times(Decimal.pow(2, sumBit));
+    }
+
+    return cost;
+}
+
+function buyAccelerator(autobuyer) {
+    // Start buying at the current amount bought + 1
+    let buyTo = player.c.buyables[31].bought.mag + 1;
+    let cashToBuy = getCostAccelerator(buyTo);
+    while (player.c.points.gte(cashToBuy)) {
+        // then multiply by 4 until it reaches just above the amount needed
+        buyTo = buyTo * 4;
+        cashToBuy = getCostAccelerator(buyTo);
+    }
+    let stepdown = Math.floor(buyTo / 8);
+    while (stepdown !== 0) {
+
+        // if step down would push it below out of expense range then divide step down by 2
+        if (getCostAccelerator(buyTo - stepdown).lte(player.c.points)) {
+            stepdown = Math.floor(stepdown / 2);
+        } else {
+            buyTo = buyTo - stepdown;
+        }
+    }
+
+    if (!autobuyer) {
+        if (player.c.buyables[31].bought.add(1).lt(buyTo)) {
+            buyTo = player.c.buyables[31].bought.mag + 1;
+        }
+    }
+
+    let buyFrom = Decimal.max(buyTo - 7, player.c.buyables[31].bought.add(1));
+    let thisCost = getCostAccelerator(buyFrom);
+    while (buyFrom.lte(buyTo) && player.c.points.gte(thisCost)) {
+        player.c.points = player.c.points.sub(thisCost);
+        player.c.buyables[31].bought = buyFrom;
+		player.c.buyables[31].amount = buyFrom;
+        buyFrom = buyFrom.add(1);
+        thisCost = getCostAccelerator(buyFrom);
+        player.c.costA = thisCost;
+    }
+
+}
+
+function getCostMultiplier(buyingTo) {
+    --buyingTo;
+
+    let originalCost = 1e5;
+    let cost = new Decimal(originalCost);
+    cost = cost.times(Decimal.pow(10, buyingTo / 1));
+
+    if (buyingTo > 75) {
+        let num = buyingTo - 75;
+        let factorialBit = new Decimal(num).factorial();
+        let powBit = Decimal.pow(10, num);
+        cost = cost.times(factorialBit.times(powBit));
+    }
+
+    if (buyingTo > 2000) {
+        let sumNum = buyingTo - 2000;
+        let sumBit = sumNum * (sumNum + 1) / 2;
+        cost = cost.times(Decimal.pow(2, sumBit));
+    }
+    return cost;
+}
+
+function buyMultiplier(autobuyer) {
+    // Start buying at the current amount bought + 1
+    let buyTo = player.c.buyables[32].bought.mag + 1;
+    let cashToBuy = getCostMultiplier(buyTo);
+    while (player.c.points.gte(cashToBuy)) {
+        // then multiply by 4 until it reaches just above the amount needed
+        buyTo = buyTo * 4;
+        cashToBuy = getCostMultiplier(buyTo);
+    }
+    let stepdown = Math.floor(buyTo / 8);
+    while (stepdown !== 0) {
+
+        // if step down would push it below out of expense range then divide step down by 2
+        if (getCostMultiplier(buyTo - stepdown).lte(player.c.points)) {
+            stepdown = Math.floor(stepdown / 2);
+        } else {
+            buyTo = buyTo - stepdown;
+        }
+    }
+
+	if (!autobuyer) {
+        if (player.c.buyables[32].bought.add(1).lt(buyTo)) {
+            buyTo = player.c.buyables[32].bought.mag + 1;
+        }
+    }
+
+    let buyFrom = Decimal.max(buyTo - 7, player.c.buyables[32].bought.add(1));
+    let thisCost = getCostMultiplier(buyFrom);
+    while (buyFrom.lte(buyTo) && player.c.points.gte(thisCost)) {
+        player.c.points = player.c.points.sub(thisCost);
+        player.c.buyables[32].bought = buyFrom;
+		player.c.buyables[32].amount = buyFrom;
+        buyFrom = buyFrom.add(1);
+        thisCost = getCostMultiplier(buyFrom);
+        player.c.costM = thisCost;
+    }
+
+}
+
 //Adapted from Synergism
 function getCost(originalCost, buyingTo, layer, num, r = player.r) {
 
